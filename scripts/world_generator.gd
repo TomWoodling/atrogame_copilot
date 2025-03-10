@@ -4,6 +4,21 @@ const CHUNK_SIZE: int = 100
 const TERRAIN_HEIGHT_RANGE: Vector2 = Vector2(-5.0, 5.0)
 const MIN_PLATFORMS_PER_CHUNK: int = 1
 const MAX_PLATFORMS_PER_CHUNK: int = 3
+const TERRAIN_VISUAL_SETTINGS = {
+	"base_material": {
+		"albedo_color": Color(0.2, 0.2, 0.25),
+		"roughness": 0.9,
+		"metallic": 0.1,
+		"rim": 0.2,
+		"rim_tint": 0.2,
+	},
+	"terrain_params": {
+		"detail_blend": 0.6,
+		"detail_scale": 20.0,
+		"normal_scale": 2.0
+	}
+}
+
 
 # Platform configurations
 const PLATFORM_TYPES = {

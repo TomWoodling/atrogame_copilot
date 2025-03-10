@@ -1,32 +1,29 @@
 extends Node
 
-var player: Node3D
-var score: int = 0
-var health: int = 100
+signal game_state_changed(new_state: String)
 
-func _ready() -> void:
-	player = get_tree().get_first_node_in_group("player")
+enum GameState { INITIALIZING, PLAYING, PAUSED }
+var current_state: GameState = GameState.INITIALIZING
+var is_initialized: bool = false
 
+func initialize() -> void:
+	if is_initialized:
+		return
+		
+	current_state = GameState.PLAYING
+	is_initialized = true
+	
 func can_player_move() -> bool:
-	return health > 0
-
-func start_interaction(zone: InteractionZone) -> void:
-	match zone.interaction_type:
-		"dialogue":
-			HUDManager.show_message(zone.interaction_data["dialogues"][0])
-		"collection":
-			score += 1
-			HUDManager.update_score(score)
-			zone.queue_free()
-		"challenge":
-			HUDManager.show_message("Challenge started!")
-
-func reduce_health(amount: int) -> void:
-	health -= amount
-	HUDManager.update_health(health)
-	if health <= 0:
-		_game_over()
-
-func _game_over() -> void:
-	HUDManager.show_message("Game Over")
-	get_tree().pause = true
+	return current_state == GameState.PLAYING
+	
+func pause_game() -> void:
+	if current_state == GameState.PLAYING:
+		current_state = GameState.PAUSED
+		get_tree().paused = true
+		emit_signal("game_state_changed", "paused")
+		
+func resume_game() -> void:
+	if current_state == GameState.PAUSED:
+		current_state = GameState.PLAYING
+		get_tree().paused = false
+		emit_signal("game_state_changed", "playing")
