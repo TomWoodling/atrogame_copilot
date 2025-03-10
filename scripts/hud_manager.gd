@@ -1,14 +1,14 @@
 extends CanvasLayer
 
-var score_label: Label
-var health_label: Label
+@onready var score_label: Label = $ScoreLabel
+@onready var health_label: Label = $HealthLabel
+@onready var message_label: Label = $MessageLabel
 
 func _ready() -> void:
-	score_label = $ScoreLabel
-	health_label = $HealthLabel
+	score_label.text = "Score: 0"
+	health_label.text = "Health: 100"
 
 func show_message(message: String, type: String = "INFO") -> void:
-	var message_label: Label = $MessageLabel
 	message_label.text = message
 	message_label.show()
 	await get_tree().create_timer(3.0).timeout
