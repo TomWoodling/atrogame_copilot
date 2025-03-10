@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://cl143mjqxva7r"]
+[gd_scene load_steps=3 format=3 uid="uid://cl143mjqxva7r"]
 
 [ext_resource type="Script" path="res://scripts/hud_manager.gd" id="1_eqok4"]
+[ext_resource type="PackedScene" uid="uid://bbhkdvvm4bgfg" path="res://scenes/ui/hud.tscn" id="2_u2pkw"]
 
 [node name="hud_manager" type="Node"]
 script = ExtResource("1_eqok4")
+
+[node name="hud" parent="." instance=ExtResource("2_u2pkw")]

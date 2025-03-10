@@ -19,7 +19,12 @@ func _on_body_entered(body: Node3D) -> void:
 	if auto_interact:
 		trigger_interaction()
 	else:
-		HUDManager.show_message("Press E to interact")
+		var message_data = {
+		"text": "Press E to interact!",
+		"color": Color.ALICE_BLUE,  # Or any Color you want
+		"duration": 3.0       # Duration in seconds
+		}
+		HUDManager.show_message(message_data)
 
 func _on_body_exited(_body: Node3D) -> void:
 	pass
