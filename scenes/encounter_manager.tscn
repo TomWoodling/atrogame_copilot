@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c01k4qctll78m"]
+
+[ext_resource type="Script" path="res://scripts/encounter_manager.gd" id="1_l5iue"]
+
+[node name="encounter_manager" type="Node"]
+script = ExtResource("1_l5iue")

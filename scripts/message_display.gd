@@ -1,35 +1,36 @@
-extends HUDElement
+extends Control
 class_name MessageDisplay
 
-@onready var label: Label = $Label
+@onready var label: Label = $Panel/Label
 @onready var panel: Panel = $Panel
 
-var hide_timer: SceneTreeTimer
+var tween: Tween
 
 func _ready() -> void:
-	# Ensure we start hidden
-	hide_element()
+	# Start invisible
+	modulate.a = 0
 
 func display_message(message_data: Dictionary) -> void:
-	# Validate message data
-	if not message_data.has_all(["text", "color", "duration"]):
-		push_error("Invalid message data format")
-		return
-		
-	if hide_timer and hide_timer.time_left > 0:
-		hide_timer.timeout.disconnect(hide_element)
-		
-	# Set up the message
+	# Cancel any existing tween
+	if tween and tween.is_valid():
+		tween.kill()
+	
+	# Set message properties
 	label.text = message_data.text
 	label.add_theme_color_override("font_color", message_data.color)
 	
-	show_element()
+	# Create fade-in tween
+	tween = create_tween()
+	tween.tween_property(self, "modulate:a", 1.0, 0.3)
 	
-	# Set up auto-hide timer
-	hide_timer = get_tree().create_timer(message_data.duration)
-	hide_timer.timeout.connect(hide_element)
-
-func hide_element() -> void:
-	if hide_timer and hide_timer.timeout.is_connected(hide_element):
-		hide_timer.timeout.disconnect(hide_element)
-	super.hide_element()
+	# Schedule fade-out and cleanup
+	await get_tree().create_timer(message_data.duration).timeout
+	
+	# Check if we still exist (scene might have changed)
+	if not is_instance_valid(self):
+		return
+		
+	# Create fade-out tween
+	tween = create_tween()
+	tween.tween_property(self, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(queue_free)

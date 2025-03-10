@@ -1,0 +1,139 @@
+extends Node
+
+signal encounter_started(type: EncounterType)
+signal encounter_completed(type: EncounterType)
+signal encounter_failed(type: EncounterType)
+signal state_changed(from: EncounterType, to: EncounterType)
+
+enum EncounterType {
+	INFO,       # Must be first (index 0) as it's our safe default
+	COLLECTION,
+	NPC,
+	CHALLENGE
+}
+
+# Current state tracking
+var current_encounter: EncounterType = EncounterType.INFO
+var is_encounter_active: bool = false
+
+# Convert enum to string for display/debug
+const ENCOUNTER_NAMES = {
+	EncounterType.INFO: "info",
+	EncounterType.COLLECTION: "collection",
+	EncounterType.NPC: "npc",
+	EncounterType.CHALLENGE: "challenge"
+}
+
+# Configuration for each type with default values
+const ENCOUNTER_CONFIGS = {
+	EncounterType.INFO: {
+		"message": "Information: %s",
+		"default_message": "This is a default message (something went wrong!)",
+		"color": Color(0.9, 0.9, 0.2),  # Yellow
+		"duration": 3.0,
+		"can_fail": false  # INFO encounters can't fail
+	},
+	EncounterType.COLLECTION: {
+		"message": "Collection Task: Gather the resources",
+		"color": Color(0.2, 0.8, 0.2),  # Green
+		"duration": 3.0,
+		"can_fail": true
+	},
+	EncounterType.NPC: {
+		"message": "NPC Encounter: Someone needs help",
+		"color": Color(0.2, 0.2, 0.8),  # Blue
+		"duration": 3.0,
+		"can_fail": true
+	},
+	EncounterType.CHALLENGE: {
+		"message": "Challenge: Test your skills",
+		"color": Color(0.8, 0.2, 0.2),  # Red
+		"duration": 3.0,
+		"can_fail": true
+	}
+}
+
+func _ready() -> void:
+	# Verify our enum assumptions
+	assert(EncounterType.INFO == 0, "INFO must be the first enum value for safe default")
+
+func get_type_from_string(type_string: String) -> EncounterType:
+	# Default to INFO if string is empty or invalid
+	if type_string.is_empty():
+		push_warning("Empty encounter type provided, defaulting to INFO")
+		return EncounterType.INFO
+		
+	for type in EncounterType.values():
+		if ENCOUNTER_NAMES[type] == type_string.to_lower():
+			return type
+			
+	push_warning("Invalid encounter type string: %s, defaulting to INFO" % type_string)
+	return EncounterType.INFO
+
+func change_state(new_type: EncounterType) -> void:
+	var old_type = current_encounter
+	if old_type != new_type:
+		current_encounter = new_type
+		emit_signal("state_changed", old_type, new_type)
+
+func start_encounter(type: EncounterType, custom_message: String = "") -> void:
+	if is_encounter_active:
+		push_warning("Attempting to start encounter while another is active")
+		return
+		
+	if not ENCOUNTER_CONFIGS.has(type):
+		push_warning("Invalid encounter type: %d, defaulting to INFO" % type)
+		type = EncounterType.INFO
+		custom_message = ENCOUNTER_CONFIGS[EncounterType.INFO].default_message
+		
+	var config = ENCOUNTER_CONFIGS[type]
+	var message = config.message
+	
+	# For INFO types, format with custom message or use default
+	if type == EncounterType.INFO:
+		message = message % (custom_message if not custom_message.is_empty() 
+						   else config.default_message)
+	
+	HUDManager.show_message({
+		"text": message,
+		"color": config.color,
+		"duration": config.duration
+	})
+	
+	is_encounter_active = true
+	change_state(type)
+	emit_signal("encounter_started", type)
+
+func complete_encounter(type: EncounterType = current_encounter) -> void:
+	if not is_encounter_active:
+		return
+		
+	if not ENCOUNTER_CONFIGS.has(type):
+		type = EncounterType.INFO
+		
+	HUDManager.show_message({
+		"text": "Encounter completed!",
+		"color": Color.GREEN,
+		"duration": 2.0
+	})
+	
+	is_encounter_active = false
+	change_state(EncounterType.INFO)  # Return to safe state
+	emit_signal("encounter_completed", type)
+
+func fail_encounter(type: EncounterType = current_encounter) -> void:
+	if not is_encounter_active:
+		return
+		
+	if not ENCOUNTER_CONFIGS.has(type) or not ENCOUNTER_CONFIGS[type].can_fail:
+		return
+		
+	HUDManager.show_message({
+		"text": "Encounter failed!",
+		"color": Color.RED,
+		"duration": 2.0
+	})
+	
+	is_encounter_active = false
+	change_state(EncounterType.INFO)  # Return to safe state
+	emit_signal("encounter_failed", type)
