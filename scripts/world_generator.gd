@@ -102,56 +102,38 @@ func generate_chunk(chunk_coords: Vector2i) -> void:
 		push_error("WorldGenerator: Failed to generate terrain for chunk %s" % chunk_coords)
 
 func generate_terrain_mesh(chunk_coords: Vector2i) -> MeshInstance3D:
-	var st := SurfaceTool.new()
+	# Create a plane mesh for the base
 	var plane_mesh := PlaneMesh.new()
-	
-	# Added one extra vertex on each side to avoid seams between chunks
-	plane_mesh.size = Vector2(CHUNK_SIZE + 1, CHUNK_SIZE + 1)
+	plane_mesh.size = Vector2(CHUNK_SIZE, CHUNK_SIZE)
 	plane_mesh.subdivide_width = 32
 	plane_mesh.subdivide_depth = 32
 	
-	var mesh_arrays := plane_mesh.get_mesh_arrays()
-	if mesh_arrays.is_empty():
-		push_error("WorldGenerator: Failed to get mesh arrays from plane mesh")
-		return null
-		
-	var vertices: PackedVector3Array = mesh_arrays[Mesh.ARRAY_VERTEX]
-	var uvs: PackedVector2Array = mesh_arrays[Mesh.ARRAY_TEX_UV]
-	var indices: PackedInt32Array = mesh_arrays[Mesh.ARRAY_INDEX]
+	# Create an ArrayMesh to modify
+	var array_mesh := ArrayMesh.new()
+	var surface_arrays := plane_mesh.surface_get_arrays(0)
 	
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	# Get vertices and modify their heights
+	var vertices: PackedVector3Array = surface_arrays[Mesh.ARRAY_VERTEX]
+	var modified_vertices := PackedVector3Array()
+	modified_vertices.resize(vertices.size())
 	
-	# Apply height to vertices
-	for i in vertices.size():
+	# Modify the height of each vertex
+	for i in range(vertices.size()):
 		var vertex := vertices[i]
 		var world_pos := vertex + Vector3(chunk_coords.x * CHUNK_SIZE, 0, chunk_coords.y * CHUNK_SIZE)
 		
-		# Adjust position to account for the extra units in plane_mesh.size
-		var local_pos = Vector3(
-			vertex.x - 0.5,  # Adjust for the extra unit in width
-			0,
-			vertex.z - 0.5   # Adjust for the extra unit in depth
-		)
-		
-		var modified_vertex := Vector3(
-			local_pos.x,
-			get_height_at_point(world_pos),
-			local_pos.z
-		)
-		st.add_vertex(modified_vertex)
-		st.set_uv(uvs[i])
+		var height := get_height_at_point(world_pos)
+		modified_vertices[i] = Vector3(vertex.x, height, vertex.z)
 	
-	# Create triangles
-	for i in range(0, indices.size(), 3):
-		st.add_index(indices[i])
-		st.add_index(indices[i + 1])
-		st.add_index(indices[i + 2])
+	# Replace the vertices in the surface arrays
+	surface_arrays[Mesh.ARRAY_VERTEX] = modified_vertices
 	
-	st.generate_normals()
-	st.generate_tangents()  # Added for better lighting/materials
+	# Add the modified surface to the array mesh
+	array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_arrays)
 	
+	# Create the mesh instance
 	var terrain := MeshInstance3D.new()
-	terrain.mesh = st.commit()
+	terrain.mesh = array_mesh
 	
 	# Create a simple material
 	var material := StandardMaterial3D.new()
@@ -161,7 +143,11 @@ func generate_terrain_mesh(chunk_coords: Vector2i) -> MeshInstance3D:
 	# Add collision
 	var static_body := StaticBody3D.new()
 	var collision_shape := CollisionShape3D.new()
-	collision_shape.shape = terrain.mesh.create_trimesh_shape()
+	
+	# Create a concave collision shape from the mesh
+	var shape := array_mesh.create_trimesh_shape()
+	collision_shape.shape = shape
+	
 	static_body.add_child(collision_shape)
 	terrain.add_child(static_body)
 	
@@ -171,8 +157,11 @@ func get_height_at_point(world_pos: Vector3) -> float:
 	var base_height := noise.get_noise_2d(world_pos.x, world_pos.z)
 	var detail := detail_noise.get_noise_2d(world_pos.x * 2.0, world_pos.z * 2.0)
 	
-	return (base_height * NOISE_PARAMS.terrain_scale + 
-			detail * NOISE_PARAMS.detail_scale)
+	# Remap from [-1,1] to our height range
+	var combined := base_height * NOISE_PARAMS.terrain_scale + detail * NOISE_PARAMS.detail_scale
+	var remapped := lerpf(TERRAIN_HEIGHT_RANGE.x, TERRAIN_HEIGHT_RANGE.y, (combined + 1.0) / 2.0)
+	
+	return remapped
 
 func generate_stages(chunk: Node3D, chunk_coords: Vector2i) -> void:
 	var num_stages := randi_range(STAGES_PER_CHUNK.min, STAGES_PER_CHUNK.max)
