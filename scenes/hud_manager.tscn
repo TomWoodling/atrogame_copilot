@@ -1,6 +1,3 @@
-[gd_scene load_steps=2 format=3 uid="uid://dyyikgo2d50s1"]
+[gd_scene format=3 uid="uid://64n1w3rpr0gv"]
 
-[ext_resource type="Script" path="res://scripts/hud_manager.gd" id="1_ppyha"]
-
-[node name="hud_manager" type="Node"]
-script = ExtResource("1_ppyha")
+[node name="hud_manager" type="CanvasLayer"]
