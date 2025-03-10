@@ -1,12 +1,15 @@
 extends Node3D
 
+@onready var player : Node3D = $player
+
 func _ready() -> void:
 	# Ensure managers are initialized
 	if not GameManager.is_initialized:
 		GameManager.initialize()
 	if not HUDManager.is_initialized:
 		HUDManager.initialize()
-		
+	
+	GameManager.player = player
 	# Setup additional environment parameters
 	setup_environment()
 

@@ -5,6 +5,7 @@ signal game_state_changed(new_state: String)
 enum GameState { INITIALIZING, PLAYING, PAUSED }
 var current_state: GameState = GameState.INITIALIZING
 var is_initialized: bool = false
+var player : Node3D
 
 func initialize() -> void:
 	if is_initialized:
