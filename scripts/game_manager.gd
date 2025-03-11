@@ -28,3 +28,4 @@ func resume_game() -> void:
 		current_state = GameState.PLAYING
 		get_tree().paused = false
 		emit_signal("game_state_changed", "playing")
+		print("resume")

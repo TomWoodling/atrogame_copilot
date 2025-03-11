@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dj5p3i6wvelp7"]
+
+[ext_resource type="Script" path="res://scripts/process_manager.gd" id="1_q8xpw"]
+
+[node name="process_manager" type="Node"]
+script = ExtResource("1_q8xpw")
