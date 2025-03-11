@@ -1,22 +1,22 @@
 extends Node
 
+signal state_changed(old_type: EncounterType, new_type: EncounterType)
 signal encounter_started(type: EncounterType)
 signal encounter_completed(type: EncounterType)
 signal encounter_failed(type: EncounterType)
-signal state_changed(from: EncounterType, to: EncounterType)
 
 enum EncounterType {
-	INFO,       # Must be first (index 0) as it's our safe default
+	INFO,
 	COLLECTION,
 	NPC,
 	CHALLENGE
 }
 
-# Current state tracking
+# Current encounter state
 var current_encounter: EncounterType = EncounterType.INFO
 var is_encounter_active: bool = false
 
-# Convert enum to string for display/debug
+# Encounter type names for string conversion
 const ENCOUNTER_NAMES = {
 	EncounterType.INFO: "info",
 	EncounterType.COLLECTION: "collection",
@@ -24,14 +24,14 @@ const ENCOUNTER_NAMES = {
 	EncounterType.CHALLENGE: "challenge"
 }
 
-# Configuration for each type with default values
+# Configuration for different encounter types
 const ENCOUNTER_CONFIGS = {
 	EncounterType.INFO: {
-		"message": "Information: %s",
-		"default_message": "This is a default message (something went wrong!)",
+		"message": "Info: %s",  # Format string for custom messages
+		"default_message": "This is the default message for debug",
 		"color": Color(0.9, 0.9, 0.2),  # Yellow
 		"duration": 3.0,
-		"can_fail": false  # INFO encounters can't fail
+		"can_fail": false
 	},
 	EncounterType.COLLECTION: {
 		"message": "Collection Task: Gather the resources",
@@ -56,18 +56,25 @@ const ENCOUNTER_CONFIGS = {
 func _ready() -> void:
 	# Verify our enum assumptions
 	assert(EncounterType.INFO == 0, "INFO must be the first enum value for safe default")
+	# Connect to ProcessManager to handle process state changes
+	ProcessManager.process_state_changed.connect(_on_process_state_changed)
 
-func get_type_from_string(type_string: String) -> EncounterType:
+func _on_process_state_changed(old_state: ProcessManager.ProcessState, new_state: ProcessManager.ProcessState) -> void:
+	# If we enter a blocking state, auto-complete any active INFO encounters
+	if new_state != ProcessManager.ProcessState.NORMAL and is_encounter_active and current_encounter == EncounterType.INFO:
+		complete_encounter()
+
+func get_type_from_string(txt_string: String) -> EncounterType:
 	# Default to INFO if string is empty or invalid
-	if type_string.is_empty():
+	if txt_string.is_empty():
 		push_warning("Empty encounter type provided, defaulting to INFO")
 		return EncounterType.INFO
 		
 	for type in EncounterType.values():
-		if ENCOUNTER_NAMES[type] == type_string.to_lower():
+		if ENCOUNTER_NAMES[type] == txt_string.to_lower():
 			return type
 			
-	push_warning("Invalid encounter type string: %s, defaulting to INFO" % type_string)
+	push_warning("Invalid encounter type string: %s, defaulting to INFO" % txt_string)
 	return EncounterType.INFO
 
 func change_state(new_type: EncounterType) -> void:

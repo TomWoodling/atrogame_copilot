@@ -7,11 +7,17 @@ extends Node3D
 @export var camera_height: float = 2.0
 @export var camera_offset: Vector3 = Vector3(0, 0, 0)
 
+@export_group("Zoom Settings")
+@export var zoom_speed: float = 0.5
+@export var min_zoom: float = 2.0
+@export var max_zoom: float = 10.0
+
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
 
 # Track rotation in Euler angles
 var camera_rotation: Vector3 = Vector3.ZERO
+var current_zoom: float
 
 # Signal to inform player_movement about camera changes
 signal camera_rotated(camera_basis: Basis)
@@ -19,8 +25,11 @@ signal camera_rotated(camera_basis: Basis)
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
+	# Initialize zoom to exported camera_distance
+	current_zoom = camera_distance
+	
 	# Configure SpringArm3D
-	spring_arm.spring_length = camera_distance
+	spring_arm.spring_length = current_zoom
 	spring_arm.position.y = camera_height
 	spring_arm.position += camera_offset
 	
@@ -48,3 +57,13 @@ func _input(event: InputEvent) -> void:
 		
 		# Emit signal with updated camera basis
 		emit_signal("camera_rotated", camera.global_transform.basis)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("zoom_in"):
+		adjust_zoom(-zoom_speed)
+	elif event.is_action_pressed("zoom_out"):
+		adjust_zoom(zoom_speed)
+
+func adjust_zoom(zoom_adjustment: float) -> void:
+	current_zoom = clamp(current_zoom + zoom_adjustment, min_zoom, max_zoom)
+	spring_arm.spring_length = current_zoom
