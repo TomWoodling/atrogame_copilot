@@ -65,10 +65,3 @@ func setup_environment() -> void:
 		# Wait a short moment to ensure world generation has started
 		await get_tree().create_timer(0.5).timeout
 		holding_area.queue_free()
-
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
-		if GameManager.current_state == GameManager.GameState.PLAYING:
-			GameManager.pause_game()
-		else:
-			GameManager.resume_game()

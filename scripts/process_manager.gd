@@ -23,13 +23,11 @@ func _input(event: InputEvent) -> void:
 	match current_state:
 		ProcessState.NORMAL:
 			if event.is_action_pressed("ui_cancel"):
-				set_process_state(ProcessState.PAUSED)
-				GameManager.pause_game()
+				enter_paused()
 		
 		ProcessState.PAUSED:
 			if event.is_action_pressed("ui_cancel"):
-				set_process_state(ProcessState.NORMAL)
-				GameManager.resume_game()
+				exit_paused()
 		
 		ProcessState.CUTSCENE:
 			if event.is_action_pressed("ui_cancel"):
@@ -48,6 +46,15 @@ func set_process_state(new_state: ProcessState) -> void:
 	
 	# Emit signal for other systems to react to state change
 	process_state_changed.emit(old_state, new_state)
+
+# Pause handling
+func enter_paused() -> void:
+	set_process_state(ProcessState.PAUSED)
+	get_tree().paused = true
+	
+func exit_paused() -> void:
+	set_process_state(ProcessState.NORMAL)
+	get_tree().paused = false
 
 # Utility functions for common state changes
 func enter_cutscene() -> void:
