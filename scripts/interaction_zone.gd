@@ -1,11 +1,39 @@
 extends Area3D
 
 @export var auto_interact: bool = false
-@export_enum("info", "collection", "npc") var encounter_type: String = "info"
-@export_multiline var custom_message: String = ""
-
+var encounter_type: String = "info"
+var custom_message: String = ""
 var player_in_range: bool = false
-var interaction_count: int = 0  # Track number of interactions
+var interaction_count: int = 0
+
+func configure(config: Dictionary) -> void:
+	encounter_type = config.type
+	
+	# Set appropriate collision shape size based on type
+	var shape: BoxShape3D = $CollisionShape3D.shape as BoxShape3D
+	if shape:
+		match encounter_type:
+			"npc": shape.size = Vector3(2.0, 1.5, 2.0)
+			"collection": shape.size = Vector3(1.5, 1.0, 1.5)
+			"info": shape.size = Vector3(1.0, 1.0, 1.0)
+
+	# Set custom message based on location or type if needed
+	custom_message = _get_contextual_message(config)
+
+func _get_contextual_message(config: Dictionary) -> String:
+	# Example of contextual messages based on terrain or position
+	var height : float = config.terrain_height
+	if height > 3.0:
+		return "The view from up here is breathtaking!"
+	elif height < -2.0:
+		return "Be careful in these low areas..."
+	
+	# Default type-based messages
+	match encounter_type:
+		"info": return "Press E to learn more"
+		"npc": return "A fellow astronaut waves at you"
+		"collection": return "Valuable resources detected"
+		_: return ""
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)

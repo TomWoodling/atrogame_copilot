@@ -19,10 +19,20 @@ const STAGES_PER_CHUNK = {
 }
 
 # Encounter type weights and configurations
+# Modify the ENCOUNTER_TYPES constant to reflect our current needs
 const ENCOUNTER_TYPES = {
-	"collection": { "weight": 0.4 },
-	"npc": { "weight": 0.3 },
-	"challenge": { "weight": 0.3 }
+	"info": { 
+		"weight": 0.4,  # More common as they're tutorial/story elements
+		"min_spacing": 30.0  # Spread info encounters further apart
+	},
+	"npc": { 
+		"weight": 0.3,
+		"min_spacing": 20.0
+	},
+	"collection": { 
+		"weight": 0.3,
+		"min_spacing": 15.0  # Can be closer together
+	}
 }
 
 # Internal state
@@ -192,9 +202,13 @@ func generate_stages(chunk: Node3D, chunk_coords: Vector2i) -> void:
 				
 			attempts += 1
 
+# Modify is_valid_stage_position to use type-specific spacing
 func is_valid_stage_position(pos: Vector3, placed_stages: Array[Vector3]) -> bool:
+	var encounter_type := select_encounter_type()
+	var min_spacing: float = ENCOUNTER_TYPES[encounter_type].get("min_spacing", STAGES_PER_CHUNK.min_spacing)
+	
 	for placed in placed_stages:
-		if pos.distance_to(placed) < STAGES_PER_CHUNK.min_spacing:
+		if pos.distance_to(placed) < min_spacing:
 			return false
 	return true
 
@@ -216,9 +230,37 @@ func create_stage(position: Vector3, encounter_type: String) -> Node3D:
 		return null
 		
 	stage.position = position
+	
+	# Calculate height offset based on surrounding terrain
+	var terrain_height := get_height_at_point(position)
+	var offset := 0.5  # Minimum height above terrain
+	
+	# Adjust stage position and setup encounter
+	stage.position.y = terrain_height + offset
+	
+	# Setup the encounter with type-specific configurations
 	if stage.has_method("setup_encounter"):
-		stage.setup_encounter(encounter_type)
+		var config := {
+			"type": encounter_type,
+			"terrain_height": terrain_height,
+			"surrounding_height": _get_surrounding_height(position)
+		}
+		stage.setup_encounter(config)
+	
 	return stage
+
+# New helper function to check surrounding terrain height
+func _get_surrounding_height(pos: Vector3, radius: float = 2.0) -> float:
+	var heights := []
+	var steps := 8  # Check 8 points around the position
+	
+	for i in range(steps):
+		var angle := (2.0 * PI * i) / steps
+		var check_pos := pos + Vector3(cos(angle) * radius, 0, sin(angle) * radius)
+		heights.append(get_height_at_point(check_pos))
+	
+	# Return the maximum height found
+	return heights.max()
 
 func check_chunks(player_pos: Vector3) -> void:
 	current_chunk = get_chunk_coords(player_pos)
