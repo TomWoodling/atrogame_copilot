@@ -25,12 +25,12 @@ func can_player_move() -> bool:
 func pause_game() -> void:
 	if current_state == GameState.PLAYING:
 		# Let ProcessManager handle the actual pause state
-		GameState.PAUSED
+		current_state = GameState.PAUSED
 		
 func resume_game() -> void:
 	if current_state == GameState.PAUSED:
 		# Let ProcessManager handle returning to normal state
-		GameState.PLAYING
+		current_state = GameState.PLAYING
 
 func _on_process_state_changed(old_state: ProcessManager.ProcessState, new_state: ProcessManager.ProcessState) -> void:
 	match new_state:

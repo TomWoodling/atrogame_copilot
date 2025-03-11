@@ -50,10 +50,12 @@ func set_process_state(new_state: ProcessState) -> void:
 # Pause handling
 func enter_paused() -> void:
 	set_process_state(ProcessState.PAUSED)
+	GameManager.pause_game()
 	get_tree().paused = true
 	
 func exit_paused() -> void:
 	set_process_state(ProcessState.NORMAL)
+	GameManager.resume_game()
 	get_tree().paused = false
 
 # Utility functions for common state changes
