@@ -7,10 +7,11 @@ radius = 0.221259
 height = 1.04699
 
 [node name="DefaultNPC" type="CharacterBody3D"]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
 
-[node name="asstronaut" parent="." instance=ExtResource("1_2ot7d")]
+[node name="model" parent="." instance=ExtResource("1_2ot7d")]
 
-[node name="Skeleton3D" parent="asstronaut/Armature" index="0"]
+[node name="Skeleton3D" parent="model/Armature" index="0"]
 bones/0/position = Vector3(-1.488, 0.111229, -43.7599)
 bones/0/rotation = Quaternion(-0.480259, -0.515876, 0.532831, 0.468309)
 bones/1/rotation = Quaternion(-0.00362608, 0.0180986, -0.0520788, 0.998472)
@@ -49,4 +50,4 @@ bones/23/scale = Vector3(1, 1, 1)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.443839, 0)
 shape = SubResource("CapsuleShape3D_pbsga")
 
-[editable path="asstronaut"]
+[editable path="model"]
