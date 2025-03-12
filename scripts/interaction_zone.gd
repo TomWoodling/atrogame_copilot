@@ -63,8 +63,9 @@ func _handle_info_interaction() -> void:
 		EncounterManager.complete_encounter()
 
 func _handle_npc_interaction() -> void:
-	# NPCs have a two-step interaction: initiate dialog, then complete
-	if interaction_count == 0:
+	var npc = get_parent().current_object as NPController
+	if npc and interaction_count == 0:
+		npc.on_interaction_started()
 		EncounterManager.start_encounter(EncounterManager.EncounterType.NPC, custom_message)
 		interaction_count += 1
 		HUDManager.show_message({
@@ -73,8 +74,9 @@ func _handle_npc_interaction() -> void:
 			"duration": 2.0
 		})
 	else:
+		if npc:
+			npc.on_interaction_ended()
 		EncounterManager.complete_encounter()
-		# Reset for potential future interactions
 		interaction_count = 0
 
 func _handle_collection_interaction() -> void:

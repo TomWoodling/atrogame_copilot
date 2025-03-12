@@ -53,10 +53,10 @@ func _apply_setup(config: Dictionary) -> void:
 
 func _get_stage_size(type: String) -> Vector2:
 	match type:
-		"npc": return Vector2(2.5, 2.5)
-		"collection": return Vector2(2.0, 2.0)
-		"info": return Vector2(1.5, 1.5)
-		_: return Vector2(2.0, 2.0)
+		"npc": return Vector2(4.0, 4.0)
+		"collection": return Vector2(3.0, 3.0)
+		"info": return Vector2(2.5, 2.5)
+		_: return Vector2(1.0, 1.0)
 
 func _resize_stage(size: Vector2) -> void:
 	# Safety check for mesh_instance
