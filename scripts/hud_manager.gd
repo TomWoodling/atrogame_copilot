@@ -6,6 +6,8 @@ signal message_hidden
 @onready var message_scene: PackedScene = preload("res://scenes/ui/message_display.tscn")
 @onready var poi_marker_scene: PackedScene = preload("res://scenes/ui/poi_marker.tscn")
 @onready var hud_scene: PackedScene = preload("res://scenes/ui/hud.tscn")
+@onready var inventory_scene: PackedScene = preload("res://scenes/ui/inventory.tscn")
+var inventory_ui: Control
 
 var message_container: Control
 var poi_container: Control
@@ -45,7 +47,6 @@ func add_poi(target: Node3D, poi_type: String, icon: Texture2D, label: String = 
 	poi_container.add_child(marker)
 	marker.setup(target, icon, label)
 	active_pois[target] = marker
-	
 	# Clean single-line connection using callable
 	if not target.tree_exiting.is_connected(remove_poi.bind(target)):
 		target.tree_exiting.connect(remove_poi.bind(target))
@@ -64,3 +65,13 @@ func clear_all_pois() -> void:
 
 func _exit_tree() -> void:
 	clear_all_pois()
+
+func show_inventory() -> void:
+	if not inventory_ui:
+		inventory_ui = inventory_scene.instantiate()
+		add_child(inventory_ui)
+	inventory_ui.show()
+
+func hide_inventory() -> void:
+	if inventory_ui:
+		inventory_ui.hide()

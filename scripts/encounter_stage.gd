@@ -56,6 +56,7 @@ func _get_stage_size(type: String) -> Vector2:
 		"npc": return Vector2(4.0, 4.0)
 		"collection": return Vector2(3.0, 3.0)
 		"info": return Vector2(2.5, 2.5)
+		"special_challenge": return Vector2(8.0, 8.0)  # Larger stage for special challenges
 		_: return Vector2(1.0, 1.0)
 
 func _resize_stage(size: Vector2) -> void:

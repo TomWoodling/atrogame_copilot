@@ -75,3 +75,10 @@ func _start_collection_encounter() -> void:
 		"color": Color(0.2, 0.9, 0.2),
 		"duration": 2.0
 	})
+
+func report_mission_status(message: String) -> void:
+	HUDManager.show_message({
+		"text": message,
+		"color": Color.YELLOW,
+		"duration": 2.0
+	})

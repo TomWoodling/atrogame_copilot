@@ -1,0 +1,133 @@
+[gd_scene load_steps=2 format=3 uid="..."]
+
+[ext_resource type="Script" path="res://scripts/ui/inventory_display.gd" id="1_rw4u1"]
+
+[node name="InventoryDisplay" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_rw4u1")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="TabContainer" type="TabContainer" parent="MarginContainer"]
+layout_mode = 2
+tab_alignment = 1
+
+[node name="Missions" type="Control" parent="MarginContainer/TabContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/TabContainer/Missions"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MissionList" type="VBoxContainer" parent="MarginContainer/TabContainer/Missions/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Collections" type="Control" parent="MarginContainer/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="CollectionTabs" type="TabContainer" parent="MarginContainer/TabContainer/Collections"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Exobiology" type="ScrollContainer" parent="MarginContainer/TabContainer/Collections/CollectionTabs"]
+layout_mode = 2
+
+[node name="List" type="VBoxContainer" parent="MarginContainer/TabContainer/Collections/CollectionTabs/Exobiology"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Exobotany" type="ScrollContainer" parent="MarginContainer/TabContainer/Collections/CollectionTabs"]
+visible = false
+layout_mode = 2
+
+[node name="List" type="VBoxContainer" parent="MarginContainer/TabContainer/Collections/CollectionTabs/Exobotany"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Exogeology" type="ScrollContainer" parent="MarginContainer/TabContainer/Collections/CollectionTabs"]
+visible = false
+layout_mode = 2
+
+[node name="List" type="VBoxContainer" parent="MarginContainer/TabContainer/Collections/CollectionTabs/Exogeology"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Artifacts" type="ScrollContainer" parent="MarginContainer/TabContainer/Collections/CollectionTabs"]
+visible = false
+layout_mode = 2
+
+[node name="List" type="VBoxContainer" parent="MarginContainer/TabContainer/Collections/CollectionTabs/Artifacts"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Encounters" type="Control" parent="MarginContainer/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/TabContainer/Encounters"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="EncounterList" type="VBoxContainer" parent="MarginContainer/TabContainer/Encounters/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Achievements" type="Control" parent="MarginContainer/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/TabContainer/Achievements"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="AchievementList" type="VBoxContainer" parent="MarginContainer/TabContainer/Achievements/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
