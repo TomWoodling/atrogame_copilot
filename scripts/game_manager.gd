@@ -39,6 +39,12 @@ func _on_process_state_changed(old_state: ProcessManager.ProcessState, new_state
 				current_state = GameState.PAUSED
 				game_state_changed.emit(GameState.PAUSED)
 				
+		ProcessManager.ProcessState.INVENTORY:
+			# Keep game state as PLAYING but ensure proper UI state
+			if current_state != GameState.PLAYING:
+				current_state = GameState.PLAYING
+				game_state_changed.emit(GameState.PLAYING)
+				
 		ProcessManager.ProcessState.NORMAL:
 			if current_state == GameState.PAUSED:
 				current_state = GameState.PLAYING
