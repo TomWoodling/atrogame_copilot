@@ -12,3 +12,12 @@ v0.2-alpha:
     Dynamic stage sizing and terrain adaptation
     Efficient chunk loading/unloading system
     Type-safe implementation for Godot 4.3
+
+
+v0.3-alpha:
+
+    Better encounter handling
+    NPC controller
+    Improved state management
+    Inventory / Collections / Achievements GUI added
+    Pause handling
