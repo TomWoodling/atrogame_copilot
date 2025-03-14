@@ -21,3 +21,11 @@ v0.3-alpha:
     Improved state management
     Inventory / Collections / Achievements GUI added
     Pause handling
+
+v0.4-alpha:
+(to-do)
+handle https://github.com/TomWoodling/atrogame_copilot/issues/1
+add basic scanning mechanics
+begin to fill inventory tabs
+add player animations
+improve gameworld lighting
