@@ -27,15 +27,22 @@ var npc_encounters: Dictionary = {}
 var achievements: Dictionary = {}
 
 func _ready() -> void:
-	# Set up process mode for proper pause behavior
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("gameplay_pause")
+	GameManager.inventory_state_changed.connect(_on_inventory_state_changed)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("inventory"):
-		if GameManager.current_state == GameManager.GameState.PLAYING and \
-		   ProcessManager.current_state == ProcessManager.ProcessState.NORMAL:
-			_toggle_inventory()
+		if GameManager.current_state == GameManager.GameState.PLAYING:
+			GameManager.toggle_inventory()
+
+func _on_inventory_state_changed(is_open: bool) -> void:
+	if is_open:
+		HUDManager.show_inventory()
+		emit_signal("inventory_opened")
+	else:
+		HUDManager.hide_inventory()
+		emit_signal("inventory_closed")
 
 func _toggle_inventory() -> void:
 	if ProcessManager.current_state == ProcessManager.ProcessState.NORMAL:

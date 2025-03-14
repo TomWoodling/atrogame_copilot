@@ -19,12 +19,16 @@ func _ready() -> void:
 	_setup_tabs()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("inventory") or event.is_action_pressed("ui_cancel"):
-		if visible:
-			_close_inventory()
-
+	if event.is_action_pressed("inventory"):
+		if GameManager.current_state == GameManager.GameState.PLAYING:
+			GameManager.toggle_inventory()
+	elif event.is_action_pressed("ui_cancel"):
+		if self.visible:
+			# Let GameManager handle the state transition
+			GameManager.return_to_normal_state()
+		
 func show_inventory() -> void:
-	show()
+	self.visible = true
 	_populate_data()
 	
 	# Smooth fade in
@@ -37,8 +41,8 @@ func _close_inventory() -> void:
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.2)
 	tween.tween_callback(func(): 
-		hide()
-		ProcessManager.exit_inventory()
+		self.visible = false
+		GameManager.toggle_inventory()
 	)
 
 func _setup_tabs() -> void:

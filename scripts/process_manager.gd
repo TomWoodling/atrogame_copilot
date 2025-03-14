@@ -1,12 +1,12 @@
 extends Node
 
+# Define different process states the game can be in
 enum ProcessState {
 	NORMAL,      # Regular gameplay
 	PAUSED,      # Game is paused
 	CUTSCENE,    # Playing a cutscene
 	TRANSITION,  # Scene/level transition
-	DIALOG,      # Dialog or important message display
-	INVENTORY    # Inventory screen active
+	DIALOG       # Dialog or important message display
 }
 
 # Current process state
@@ -19,35 +19,15 @@ func _ready() -> void:
 	# Ensure this node always processes
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
-func enter_inventory() -> void:
-	if current_state == ProcessState.NORMAL:
-		set_process_state(ProcessState.INVENTORY)
-		# Don't pause the tree, but do release mouse capture
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		print("enter inv")
-
-func exit_inventory() -> void:
-	if current_state == ProcessState.INVENTORY:
-		set_process_state(ProcessState.NORMAL)
-		# Restore mouse capture for gameplay
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		print("exit inv")
-
 func _input(event: InputEvent) -> void:
 	match current_state:
 		ProcessState.NORMAL:
 			if event.is_action_pressed("ui_cancel"):
 				enter_paused()
-			elif event.is_action_pressed("inventory"):
-				enter_inventory()
 		
 		ProcessState.PAUSED:
 			if event.is_action_pressed("ui_cancel"):
 				exit_paused()
-		
-		ProcessState.INVENTORY:
-			if event.is_action_pressed("inventory") or event.is_action_pressed("ui_cancel"):
-				exit_inventory()
 		
 		ProcessState.CUTSCENE:
 			if event.is_action_pressed("ui_cancel"):
@@ -96,6 +76,5 @@ func enter_transition() -> void:
 	# Future: Scene transition handling
 
 # Check if we're in a state that should block normal gameplay
-# Update gameplay block check
 func is_gameplay_blocked() -> bool:
 	return current_state != ProcessState.NORMAL
