@@ -36,7 +36,7 @@ enum AstronautState {
 # Node references
 @onready var camera_rig: Node3D = $CameraRig
 @onready var mesh: Node3D = $meshy_snaut
-@onready var scan_ray: RayCast3D = $ScanRay
+@onready var scan_ray: RayCast3D = $meshy_snaut/ScanRay
 
 # State management
 var current_state: AstronautState = AstronautState.NORMAL

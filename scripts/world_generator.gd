@@ -4,20 +4,19 @@ signal stage_created(stage: Node3D, encounter_type: StringName)
 
 # Terrain Generation Constants
 const CHUNK_SIZE: int = 100
-const TERRAIN_HEIGHT_RANGE: Vector2 = Vector2(-5.0, 5.0)
+const TERRAIN_HEIGHT_RANGE: Vector2 = Vector2(-2.0, 2.5)
 const NOISE_PARAMS = {
 	"frequency": 0.005,
 	"terrain_scale": 10.0,
 	"detail_scale": 2.0
 }
 
-# Stage/Encounter Generation Constants
 const STAGES_PER_CHUNK = {
 	"min": 1,
 	"max": 3,
-	"min_spacing": 20.0
+	"min_spacing": 20.0,
+	"height_offset": 0.5  # Explicit height offset for better accessibility
 }
-
 # Encounter type weights and configurations
 # Modify the ENCOUNTER_TYPES constant to reflect our current needs
 const ENCOUNTER_TYPES = {
@@ -280,6 +279,7 @@ func select_encounter_type() -> String:
 	
 	return ENCOUNTER_TYPES.keys()[0]
 
+# Update create_stage function with the new height offset
 func create_stage(position: Vector3, encounter_type: String) -> Node3D:
 	var stage := encounter_stage.instantiate() as Node3D
 	if not stage:
@@ -288,12 +288,11 @@ func create_stage(position: Vector3, encounter_type: String) -> Node3D:
 		
 	stage.position = position
 	
-	# Calculate height offset based on surrounding terrain
+	# Calculate height offset based on terrain height
 	var terrain_height := get_height_at_point(position)
-	var offset := 0.5  # Minimum height above terrain
 	
-	# Adjust stage position and setup encounter
-	stage.position.y = terrain_height + offset
+	# Use the explicit height offset from constants
+	stage.position.y = terrain_height + STAGES_PER_CHUNK.height_offset
 	
 	# Setup the encounter with type-specific configurations
 	if stage.has_method("setup_encounter"):
