@@ -8,6 +8,8 @@ signal message_hidden
 @onready var hud_scene: PackedScene = preload("res://scenes/ui/hud.tscn")
 @onready var inventory_scene: PackedScene = preload("res://scenes/ui/inventory.tscn")
 var inventory_ui: Control
+@onready var scanner_display_scene: PackedScene = preload("res://scenes/ui/scanner_display.tscn")
+var scanner_display: Control
 
 var message_container: Control
 var poi_container: Control
@@ -75,3 +77,13 @@ func show_inventory() -> void:
 func hide_inventory() -> void:
 	if inventory_ui:
 		inventory_ui.hide()
+
+func show_scanner() -> void:
+	if not scanner_display:
+		scanner_display = scanner_display_scene.instantiate()
+		add_child(scanner_display)
+	scanner_display.show_element()
+
+func hide_scanner() -> void:
+	if scanner_display:
+		scanner_display.hide_element()
