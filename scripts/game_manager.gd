@@ -2,9 +2,19 @@ extends Node
 
 signal game_state_changed(new_state: GameState)
 signal inventory_state_changed(is_open: bool)
+# Add scanning-specific signals
+signal scan_started
+signal scan_completed
+signal scan_interrupted
 
 enum GameState { INITIALIZING, PLAYING, PAUSED }
-enum GameplayState { NORMAL, INVENTORY }
+enum GameplayState { 
+	NORMAL,
+	INVENTORY,
+	SCANNING,  # New state for scanning
+	INTERACTING,  # For future NPC interactions
+	CUTSCENE  # For cinematic moments
+}
 
 var current_state: GameState = GameState.INITIALIZING
 var gameplay_state: GameplayState = GameplayState.NORMAL
@@ -57,6 +67,9 @@ func _set_gameplay_state(new_state: GameplayState) -> void:
 		GameplayState.INVENTORY:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 			inventory_state_changed.emit(true)
+		GameplayState.SCANNING:
+			# Scanning might want reduced mouse sensitivity
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func pause_game() -> void:
 	if current_state == GameState.PLAYING:
@@ -86,3 +99,13 @@ func can_player_move() -> bool:
 func _on_process_state_changed(old_state: int, new_state: int) -> void:
 	# Handle any necessary state synchronization with ProcessManager
 	pass
+
+func start_scanning() -> void:
+	if current_state == GameState.PLAYING and gameplay_state == GameplayState.NORMAL:
+		_set_gameplay_state(GameplayState.SCANNING)
+		scan_started.emit()
+
+func stop_scanning() -> void:
+	if gameplay_state == GameplayState.SCANNING:
+		_set_gameplay_state(GameplayState.NORMAL)
+		scan_interrupted.emit()
