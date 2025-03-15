@@ -44,6 +44,7 @@ func start_scan(target: Node3D) -> void:
 	scan_progress = 0.0
 	scan_time = _calculate_scan_time(target)
 	scan_started.emit(target)
+	print("scan started")
 
 func interrupt_scan(reason: String = "Scan interrupted") -> void:
 	if is_scanning:
@@ -95,6 +96,7 @@ func _complete_scan() -> void:
 	is_scanning = false
 	current_scan_target = null
 	scan_progress = 0.0
+	print("scan ended")
 
 func _calculate_scan_time(target: Node3D) -> float:
 	# Base scan time can be modified by object properties
@@ -130,6 +132,25 @@ func _can_scan(target: Node3D = null) -> bool:
 func _on_game_state_changed(_new_state: int) -> void:
 	if is_scanning:
 		interrupt_scan("Game state changed")
+
+func _validate_scanning_state() -> bool:
+	if not is_scanning or not current_scan_target:
+		return false
+		
+	if not is_instance_valid(current_scan_target):
+		interrupt_scan("Target lost")
+		return false
+		
+	var distance = GameManager.player.global_position.distance_to(current_scan_target.global_position)
+	if distance > SCAN_RANGE:
+		interrupt_scan("Target out of range")
+		return false
+		
+	if not GameManager.can_player_move():
+		interrupt_scan("Invalid player state")
+		return false
+		
+	return true
 
 func is_object_scanned(object_id: int) -> bool:
 	return scanned_objects.has(object_id)

@@ -54,3 +54,12 @@ func _on_scan_failed(reason: String) -> void:
 		"color": Color(0.9, 0.2, 0.2),
 		"duration": 2.0
 	})
+
+func update_range_indicator(target: Node3D) -> void:
+	if target and is_instance_valid(target):
+		var distance = GameManager.player.global_position.distance_to(target.global_position)
+		var in_range = distance <= ScannerManager.SCAN_RANGE
+		range_indicator.value = (1.0 - distance / ScannerManager.SCAN_RANGE) * 100
+		range_indicator.modulate = Color.GREEN if in_range else Color.RED
+	else:
+		range_indicator.value = 0

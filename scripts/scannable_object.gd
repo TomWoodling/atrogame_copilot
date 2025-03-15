@@ -24,6 +24,7 @@ func _ready() -> void:
 func get_scan_data() -> Dictionary:
 	has_been_scanned = true
 	scan_highlight.visible = false
+	stop_scan_effect()
 	return {
 		"name": object_name,
 		"category": ScannerManager.ScanCategory.values()[scan_category],
@@ -31,7 +32,7 @@ func get_scan_data() -> Dictionary:
 		"timestamp": Time.get_unix_time_from_system(),
 		"location": global_position,
 	}
-
+	
 func get_scan_difficulty() -> float:
 	return scan_difficulty
 
@@ -39,3 +40,12 @@ func highlight_in_range(is_in_range: bool) -> void:
 	in_range = is_in_range
 	scan_highlight.visible = is_in_range and not has_been_scanned
 	scan_indicator.visible = is_in_range and not has_been_scanned
+
+# Add these methods to the existing scannable_object.gd
+func start_scan_effect() -> void:
+	if scan_indicator:
+		scan_indicator.emitting = true
+		
+func stop_scan_effect() -> void:
+	if scan_indicator:
+		scan_indicator.emitting = false
