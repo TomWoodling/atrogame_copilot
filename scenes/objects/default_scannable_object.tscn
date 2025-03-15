@@ -26,6 +26,9 @@ material = SubResource("StandardMaterial3D_4sdl6")
 
 [node name="DefaultScannableObject" type="StaticBody3D"]
 script = ExtResource("1_scan")
+scan_category = 3
+object_name = "Default Object"
+description = "The defualt object for testing"
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_default")

@@ -35,6 +35,15 @@ const ENCOUNTER_TYPES = {
 	}
 }
 
+const SCANNABLE_SPAWN_CONFIG = {
+	"per_chunk": {
+		"min": 2,
+		"max": 4
+	},
+	"min_spacing": 15.0,  # Minimum distance between scannable objects
+	"height_offset": 0.5   # How far above terrain to spawn
+}
+
 # Internal state
 var noise: FastNoiseLite
 var detail_noise: FastNoiseLite
@@ -43,6 +52,7 @@ var current_chunk: Vector2i
 var player: Node3D
 
 @onready var encounter_stage: PackedScene = preload("res://scenes/stages/encounter_stage.tscn")
+@onready var scannable_object: PackedScene = preload("res://scenes/objects/default_scannable_object.tscn")
 
 func _ready() -> void:
 	if not encounter_stage:
@@ -106,6 +116,7 @@ func generate_chunk(chunk_coords: Vector2i) -> void:
 	if terrain:
 		chunk.add_child(terrain)
 		generate_stages(chunk, chunk_coords)
+		spawn_scannable_objects(chunk, chunk_coords)  # Add this line
 		generated_chunks[chunk_coords] = chunk
 	else:
 		chunk.queue_free()
@@ -201,6 +212,52 @@ func generate_stages(chunk: Node3D, chunk_coords: Vector2i) -> void:
 				break
 				
 			attempts += 1
+
+func spawn_scannable_objects(chunk: Node3D, chunk_coords: Vector2i) -> void:
+	var num_objects := randi_range(
+		SCANNABLE_SPAWN_CONFIG.per_chunk.min, 
+		SCANNABLE_SPAWN_CONFIG.per_chunk.max
+	)
+	
+	var placed_positions: Array[Vector3] = []
+	var attempts := 0
+	var max_attempts := num_objects * 4  # Prevent infinite loops
+	
+	while placed_positions.size() < num_objects and attempts < max_attempts:
+		var pos := Vector3(
+			randf_range(0, CHUNK_SIZE),
+			0,
+			randf_range(0, CHUNK_SIZE)
+		)
+		
+		# Check minimum spacing
+		var valid_position := true
+		for placed in placed_positions:
+			if pos.distance_to(placed) < SCANNABLE_SPAWN_CONFIG.min_spacing:
+				valid_position = false
+				break
+		
+		if valid_position:
+			var world_pos := pos + Vector3(
+				chunk_coords.x * CHUNK_SIZE,
+				0,
+				chunk_coords.y * CHUNK_SIZE
+			)
+			
+			# Set Y position based on terrain height
+			pos.y = get_height_at_point(world_pos) + SCANNABLE_SPAWN_CONFIG.height_offset
+			
+			var object := scannable_object.instantiate()
+			object.position = pos
+			
+			# Optional: Set random name/description from a pool if desired
+			# object.object_name = get_random_object_name()
+			# object.description = get_random_description()
+			
+			chunk.add_child(object)
+			placed_positions.append(pos)
+		
+		attempts += 1
 
 # Modify is_valid_stage_position to use type-specific spacing
 func is_valid_stage_position(pos: Vector3, placed_stages: Array[Vector3]) -> bool:
