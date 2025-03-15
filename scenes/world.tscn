@@ -23,3 +23,5 @@ size = Vector3(2, 0.1, 2)
 
 [node name="player" parent="." instance=ExtResource("4_rfup5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.46222, 0)
+
+[node name="ScanRay" type="RayCast3D" parent="player"]
