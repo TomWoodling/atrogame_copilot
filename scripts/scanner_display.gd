@@ -1,8 +1,8 @@
 extends Control
 
-@onready var progress_bar: ProgressBar = $ScanProgress
-@onready var target_info: Label = $TargetInfo
-@onready var range_indicator: TextureProgressBar = $RangeIndicator
+@onready var progress_bar: ProgressBar = $HUDElement/VBoxContainer/ScanProgress
+@onready var target_info: Label = $HUDElement/VBoxContainer/TargetInfo
+@onready var range_indicator: TextureProgressBar = $HUDElement/VBoxContainer/RangeIndicator
 
 var current_target: Node3D = null
 
@@ -16,44 +16,34 @@ func _ready() -> void:
 	target_info.hide()
 
 func _process(_delta: float) -> void:
-	if ScannerManager.is_scanning:
+	if ScannerManager.is_scanning and current_target:
 		progress_bar.value = ScannerManager.scan_progress * 100
 		
-		if current_target:
-			var distance = GameManager.player.global_position.distance_to(current_target.global_position)
-			range_indicator.value = (1.0 - distance / ScannerManager.SCAN_RANGE) * 100
+		var distance = GameManager.player.global_position.distance_to(current_target.global_position)
+		range_indicator.value = (1.0 - distance / ScannerManager.SCAN_RANGE) * 100
 
 func _on_scan_started(target: Node3D) -> void:
+	if not target is ScannableObject:
+		return
+		
 	current_target = target
 	progress_bar.show()
 	progress_bar.value = 0
 	
-	if target is ScannableObject:
-		target_info.text = target.object_name
+	var scannable := target as ScannableObject
+	if scannable.collection_data:
+		target_info.text = scannable.collection_data.label if scannable.collection_data.label else "Unknown Object"
 	target_info.show()
 
 func _on_scan_completed(_target: Node3D, data: Dictionary) -> void:
 	progress_bar.hide()
 	target_info.hide()
 	current_target = null
-	
-	# Show completion feedback
-	HUDManager.show_message({
-		"text": "Scan complete: %s" % data.name,
-		"color": Color(0.2, 0.9, 0.2),
-		"duration": 2.0
-	})
 
 func _on_scan_failed(reason: String) -> void:
 	progress_bar.hide()
 	target_info.hide()
 	current_target = null
-	
-	HUDManager.show_message({
-		"text": "Scan failed: %s" % reason,
-		"color": Color(0.9, 0.2, 0.2),
-		"duration": 2.0
-	})
 
 func update_range_indicator(target: Node3D) -> void:
 	if target and is_instance_valid(target):

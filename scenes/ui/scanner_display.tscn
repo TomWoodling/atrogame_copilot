@@ -34,10 +34,16 @@ offset_bottom = 160.0
 grow_horizontal = 0
 script = ExtResource("1_scanner")
 
-[node name="HUDElement" type="Node" parent="."]
+[node name="HUDElement" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("2_hud_element")
 
-[node name="Background" type="Panel" parent="."]
+[node name="Background" type="Panel" parent="HUDElement"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -45,7 +51,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUDElement"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -55,21 +61,21 @@ grow_vertical = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="TargetInfo" type="Label" parent="VBoxContainer"]
+[node name="TargetInfo" type="Label" parent="HUDElement/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "Target Name"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ScanProgress" type="ProgressBar" parent="VBoxContainer"]
+[node name="ScanProgress" type="ProgressBar" parent="HUDElement/VBoxContainer"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_progress")
 theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
 show_percentage = false
 
-[node name="RangeIndicator" type="TextureProgressBar" parent="VBoxContainer"]
+[node name="RangeIndicator" type="TextureProgressBar" parent="HUDElement/VBoxContainer"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 fill_mode = 4

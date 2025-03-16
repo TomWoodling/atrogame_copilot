@@ -1,10 +1,8 @@
 extends StaticBody3D
 class_name ScannableObject
 
-@export var collection_data: Resource  # Type as Resource to avoid cyclic dependency
+@export var collection_data: CollectionItemData
 @export var scan_difficulty: float = 0.0  # 0.0 to 1.0
-@export var display_label: String = ""  # Optional override for collection_data.label
-@export_multiline var display_description: String = ""  # Optional override for collection_data.description
 
 @onready var scan_highlight: OmniLight3D = $ScanHighlight
 @onready var scan_indicator: GPUParticles3D = $ScanIndicator
@@ -13,29 +11,34 @@ var has_been_scanned: bool = false
 var in_range: bool = false
 
 func _ready() -> void:
-	assert(collection_data != null and collection_data is CollectionItemData, 
-		   "ScannableObject must have valid CollectionItemData resource!")
-	
-	# Use collection data if no overrides set
-	if display_label.is_empty():
-		display_label = collection_data.label
-	if display_description.is_empty():
-		display_description = collection_data.description
+	if not collection_data:
+		push_error("ScannableObject requires CollectionItemData resource")
+		return
+		
+	# Set up default material if none provided
+	if $MeshInstance3D.get_surface_override_material(0) == null:
+		var default_mat = StandardMaterial3D.new()
+		default_mat.albedo_color = Color(0.7, 0.7, 0.8)
+		default_mat.metallic = 0.3
+		default_mat.roughness = 0.7
+		$MeshInstance3D.set_surface_override_material(0, default_mat)
 
 func get_scan_data() -> Dictionary:
 	has_been_scanned = true
 	scan_highlight.visible = false
 	stop_scan_effect()
-	
 	return {
-		"id": collection_data.id,  # Numeric ID for internal reference
-		"label": display_label,  # Text for display
-		"category": collection_data.category,  # Enum as int
-		"description": display_description,
+		"id": collection_data.id,
+		"category": collection_data.category,
+		"label": collection_data.label,
+		"description": collection_data.description,
+		"rarity_tier": collection_data.rarity_tier,
 		"timestamp": Time.get_unix_time_from_system(),
 		"location": global_position,
-		"rarity_tier": collection_data.rarity_tier  # Numeric tier
 	}
+	
+func get_scan_difficulty() -> float:
+	return scan_difficulty
 
 func highlight_in_range(is_in_range: bool) -> void:
 	in_range = is_in_range
@@ -43,7 +46,7 @@ func highlight_in_range(is_in_range: bool) -> void:
 	scan_indicator.visible = is_in_range and not has_been_scanned
 
 func start_scan_effect() -> void:
-	if scan_indicator and not has_been_scanned:
+	if scan_indicator:
 		scan_indicator.emitting = true
 		
 func stop_scan_effect() -> void:
