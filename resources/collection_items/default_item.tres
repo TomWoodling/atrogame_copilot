@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CollectionItemData" load_steps=2 format=3 uid="uid://dmytjoevfo3r4"]
+
+[ext_resource type="Script" path="res://scripts/collection_item_data.gd" id="1_2mg08"]
+
+[resource]
+script = ExtResource("1_2mg08")
+id = 0
+category = 3
+label = ""
+description = "This is the default object to test scanning"
+icon_path = "res://assets/icons/orb_icon.png"
+model_scene_path = ""
+rarity_tier = 1

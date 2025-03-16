@@ -87,3 +87,22 @@ func show_scanner() -> void:
 func hide_scanner() -> void:
 	if scanner_display:
 		scanner_display.hide_element()
+
+func show_collection_notification(scan_data: Dictionary) -> void:
+	var message_data := {
+		"title": "New Discovery!" if scan_data.is_first_find else "Collected",
+		"text": scan_data.label,
+		"subtext": "Category: %s" % scan_data.category,
+		"duration": 3.0,
+		"type": "collection",
+		"rarity_tier": scan_data.rarity_tier
+	}
+	show_message(message_data)
+
+
+# Scanner progress updates - works with existing scanner_display scene
+func update_scan_progress(progress: float, target_name: String = "") -> void:
+	if scanner_display:
+		scanner_display.update_progress(progress)
+		if not target_name.is_empty():
+			scanner_display.update_target(target_name)

@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://ciswi2o04nbti"]
+[gd_scene load_steps=9 format=3 uid="uid://ciswi2o04nbti"]
 
 [ext_resource type="Script" path="res://scripts/scannable_object.gd" id="1_scan"]
 [ext_resource type="Texture2D" uid="uid://d1k2653078dyf" path="res://assets/textures/embers.png" id="2_6jdgb"]
+[ext_resource type="Resource" uid="uid://dmytjoevfo3r4" path="res://resources/collection_items/default_item.tres" id="2_qy3bq"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_default"]
 
@@ -28,9 +29,7 @@ material = SubResource("StandardMaterial3D_4sdl6")
 collision_layer = 9
 collision_mask = 0
 script = ExtResource("1_scan")
-scan_category = 3
-object_name = "Default Object"
-description = "The defualt object for testing"
+collection_data = ExtResource("2_qy3bq")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_default")
