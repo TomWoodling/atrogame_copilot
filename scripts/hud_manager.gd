@@ -54,17 +54,35 @@ func show_message(message_data: Dictionary) -> void:
 func _on_scan_started(target: Node3D) -> void:
 	if not scanner_display:
 		scanner_display = scanner_display_scene.instantiate()
+		# Since our scanner is now a HUDElement, we should add it to the HUD
 		add_child(scanner_display)
-	scanner_display.show()
-	scanner_display._on_scan_started(target)  # Use the existing method from scanner_display.gd
+		# Get the actual scanner display component
+		var display = scanner_display.get_node("ScannerDisplay")
+		if display:
+			display._on_scan_started(target)
+	else:
+		var display = scanner_display.get_node("ScannerDisplay")
+		if display:
+			display._on_scan_started(target)
 
 func _on_scan_completed(target: Node3D, data: Dictionary) -> void:
 	if scanner_display:
-		scanner_display._on_scan_completed(target, data)
+		var display = scanner_display.get_node("ScannerDisplay")
+		if display:
+			display._on_scan_completed(target, data)
 
 func _on_scan_failed(reason: String) -> void:
 	if scanner_display:
-		scanner_display._on_scan_failed(reason)
+		var display = scanner_display.get_node("ScannerDisplay")
+		if display:
+			display._on_scan_failed(reason)
+			
+		# Also show the failure message
+		show_message({
+			"text": reason,
+			"color": Color(0.9, 0.2, 0.2),
+			"duration": 2.0
+		})
 
 # Collection Update
 func _on_collection_updated(category: String, item_id: String, count: int) -> void:

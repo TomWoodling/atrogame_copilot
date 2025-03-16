@@ -17,4 +17,3 @@ func hide_element() -> void:
 	tween = create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.2)
 	tween.tween_callback(func(): hide())
-	
