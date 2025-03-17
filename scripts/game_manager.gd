@@ -113,9 +113,7 @@ func stop_scanning() -> void:
 		_set_gameplay_state(GameplayState.NORMAL)
 		
 func enter_stunned() -> void:
-	if current_state == GameState.PLAYING:
-		_set_gameplay_state(GameplayState.STUNNED)
+	_set_gameplay_state(GameplayState.STUNNED)
 
 func exit_stunned() -> void:
-	if gameplay_state == GameplayState.STUNNED:
-		_set_gameplay_state(GameplayState.NORMAL)
+	_set_gameplay_state(GameplayState.NORMAL)

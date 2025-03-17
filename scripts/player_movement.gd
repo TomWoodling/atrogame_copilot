@@ -27,6 +27,7 @@ extends CharacterBody3D
 @export var stunned_speed_mult: float = 0.0       # No movement during stun
 @export var stunned_rotation_mult: float = 0.0    # No rotation during stun
 @export var stunned_recovery_speed_mult: float = 0.3  # Slow movement during recovery
+@export var original_air_control: float = 0.0
 
 const JUMP_DURATION: float = 0.6
 
@@ -41,7 +42,6 @@ var camera_basis: Basis = Basis.IDENTITY
 var target_basis: Basis = Basis.IDENTITY
 var current_rotation_speed: float = 0.0
 var was_in_air: bool = false
-var landing_velocity: float = 0.0
 var current_speed: float = 0.0
 
 # Jump state
@@ -49,12 +49,12 @@ var jump_time: float = 0.0
 var is_jumping: bool = false
 var can_jump: bool = true
 
-# signals
-signal hard_landing(velocity)
-
 func _ready() -> void:
 	assert(camera_rig != null, "Camera rig node not found!")
 	assert(mesh != null, "Mesh node not found!")
+	
+	# Store original air control value
+	original_air_control = air_control
 	
 	# Get reference to the animation tree
 	animation_tree = mesh.get_node("AnimationTree")
@@ -108,8 +108,18 @@ func _update_jump_state(delta: float) -> void:
 			var jump_curve = 1.0 - ease(jump_time / JUMP_DURATION, -1.8)
 			velocity.y = jump_strength * jump_curve * 2.0
 	elif !is_on_floor():
-		landing_velocity = velocity.y
 		velocity.y = move_toward(velocity.y, -max_fall_speed, gravity * delta)
+
+
+func set_falling(is_falling: bool) -> void:
+	# If we are falling from a significant height, we should adjust the air control
+	if is_falling:
+		# Reduce air control during free-fall to make it feel more weighty
+		var falling_air_control_factor = 0.7
+		air_control = original_air_control * falling_air_control_factor
+	else:
+		# Reset air control when not falling
+		air_control = original_air_control
 
 func _handle_movement(delta: float, on_floor: bool, speed_mod: float, rot_mod: float) -> void:
 	var input_dir = Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -215,13 +225,18 @@ func _apply_jump_horizontal_momentum() -> void:
 		velocity.z = horizontal_jump.z * (1.0 - air_damping)
 
 func _handle_landing() -> void:
-	var landing_intensity = abs(landing_velocity) / max_fall_speed
+	# We no longer need to check landing velocity here since fall_detector handles that
+	# Just apply landing cushion to soften vertical velocity
 	velocity.y = velocity.y / landing_cushion
 	
-	velocity.x *= (1.0 - landing_intensity * 0.3)
-	velocity.z *= (1.0 - landing_intensity * 0.3)
-	
-	# Signal the animation controller if this is a hard landing
-	if abs(landing_velocity) > 8.0:
-		print("hard landing")
-		hard_landing.emit(landing_velocity)
+	# Apply a flat reduction to horizontal movement upon landing
+	# Using a constant value since the fall_detector is now responsible for 
+	# determining if this was a hard landing or not
+	velocity.x *= 0.7
+	velocity.z *= 0.7
+
+func trigger_splat() -> void:
+	pass
+	# Notify the animation system
+	#if animation_tree:
+		#animation_tree._apply_animation_state(animation_tree.AnimState.SPLAT)
