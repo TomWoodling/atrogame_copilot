@@ -101,11 +101,10 @@ func _on_process_state_changed(old_state: int, new_state: int) -> void:
 	pass
 
 func start_scanning() -> void:
-	if current_state == GameState.PLAYING and gameplay_state == GameplayState.NORMAL:
+	if current_state == GameState.PLAYING:
 		_set_gameplay_state(GameplayState.SCANNING)
 		scan_started.emit()
 
 func stop_scanning() -> void:
 	if gameplay_state == GameplayState.SCANNING:
 		_set_gameplay_state(GameplayState.NORMAL)
-		scan_interrupted.emit()

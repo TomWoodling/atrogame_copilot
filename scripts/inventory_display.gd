@@ -7,6 +7,22 @@ const TAB_COLORS = {
 	"achievements": Color(0.9, 0.2, 0.7, 0.8)  # Magenta for achievements
 }
 
+# Map between category enums and display names
+const CATEGORY_NAMES = {
+	0: "EXOBIOLOGY",
+	1: "EXOBOTANY",
+	2: "EXOGEOLOGY",
+	3: "ARTIFACTS"
+}
+
+# Map between category strings and tab names
+const CATEGORY_TABS = {
+	"EXOBIOLOGY": "Exobiology",
+	"EXOBOTANY": "Exobotany",
+	"EXOGEOLOGY": "Exogeology",
+	"ARTIFACTS": "Artifacts"
+}
+
 @onready var tab_container: TabContainer = $MarginContainer/TabContainer
 @onready var backdrop: ColorRect = $Backdrop
 
@@ -75,6 +91,7 @@ func _populate_missions() -> void:
 	var mission_container = tab_container.get_node("Missions/ScrollContainer/MissionList")
 	_clear_container(mission_container)
 	
+	# Assuming GameManager still provides these properties
 	if InventoryManager.is_mission_active:
 		_create_mission_display(mission_container, 
 			InventoryManager.current_mission_items,
@@ -105,11 +122,28 @@ func _create_mission_display(container: Control, mission_data: Dictionary, missi
 func _populate_collections() -> void:
 	var collection_tabs = tab_container.get_node("Collections/CollectionTabs")
 	
-	for category in InventoryManager.collections.keys():
-		var category_container = collection_tabs.get_node("%s/List" % category.capitalize())
+	# Get all collection categories from the inventory manager
+	var categories = InventoryManager.get_collection_categories()
+	
+	# Process each category
+	for category in categories:
+		# Get the corresponding tab name for this category
+		var tab_name = CATEGORY_TABS.get(category, category.capitalize())
+		var category_container = collection_tabs.get_node("%s/List" % tab_name)
+		
+		if not category_container:
+			push_warning("Failed to find container for category: %s" % tab_name)
+			continue
+			
 		_clear_container(category_container)
 		
-		var items = InventoryManager.collections[category]
+		# Get collection data for this category
+		var items = InventoryManager.get_collection_data(category)
+		
+		# Skip category entry in collections
+		if items.has("category"):
+			items.erase("category")
+		
 		if items.is_empty():
 			_add_flavor_text(category_container, 
 				_get_empty_collection_message(category),
@@ -119,17 +153,66 @@ func _populate_collections() -> void:
 
 func _create_collection_display(container: Control, items: Dictionary) -> void:
 	for item_id in items:
+		# Skip metadata entries
+		if item_id == "category":
+			continue
+			
+		var item_data = items[item_id]
+		
+		# Skip if this is not actually an item
+		if typeof(item_data) != TYPE_DICTIONARY:
+			continue
+		
 		var item_box = PanelContainer.new()
+		var hbox = HBoxContainer.new()
+		item_box.add_child(hbox)
+		
+		# Add icon if available
+		var icon_path = item_data.get("icon_path", "")
+		if not icon_path.is_empty():
+			var texture_rect = TextureRect.new()
+			var texture = load(icon_path)
+			if texture:
+				texture_rect.texture = texture
+				texture_rect.expand_mode = 3
+				texture_rect.custom_minimum_size = Vector2(48, 48)
+				hbox.add_child(texture_rect)
+		
+		# Add text content
 		var vbox = VBoxContainer.new()
-		item_box.add_child(vbox)
+		hbox.add_child(vbox)
 		
+		# Create title container with name and rarity
+		var title_hbox = HBoxContainer.new()
+		vbox.add_child(title_hbox)
+		
+		# Use label if available, otherwise use ID
+		var item_label = item_data.get("label", item_id)
 		var name_label = Label.new()
-		name_label.text = item_id.capitalize()
-		vbox.add_child(name_label)
+		name_label.text = item_label
+		title_hbox.add_child(name_label)
 		
+		# Add rarity indicator
+		var rarity_tier : int = item_data.get("rarity_tier", 1)
+		var rarity_label = Label.new()
+		rarity_label.text = " ★".repeat(rarity_tier) # Display stars based on rarity
+		rarity_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.0))  # Gold color
+		title_hbox.add_child(rarity_label)
+		
+		# Show count
+		var count = item_data.get("count", 0)
 		var count_label = Label.new()
-		count_label.text = "Found: %d" % items[item_id].count
+		count_label.text = "Found: %d" % count
 		vbox.add_child(count_label)
+		
+		# Add description if available
+		var description = item_data.get("description", "")
+		if not description.is_empty():
+			var desc_label = Label.new()
+			desc_label.text = description
+			desc_label.add_theme_font_size_override("font_size", 12)
+			desc_label.autowrap_mode = 3
+			vbox.add_child(desc_label)
 		
 		container.add_child(item_box)
 
@@ -162,13 +245,13 @@ func _create_encounter_display(container: Control, encounters: Dictionary) -> vo
 
 func _get_empty_collection_message(category: String) -> String:
 	match category:
-		"exobiology":
+		"EXOBIOLOGY":
 			return "No lifeforms catalogued yet.\nThey're probably just shy..."
-		"exobotany":
+		"EXOBOTANY":
 			return "Plant database empty.\nThey must be well-camouflaged..."
-		"exogeology":
+		"EXOGEOLOGY":
 			return "No interesting rocks found.\nDon't take them for granite!"
-		"artifacts":
+		"ARTIFACTS":
 			return "Nothing collected yet.\nKeep exploring, space cowboy!"
 		_:
 			return "Nothing here yet!"
