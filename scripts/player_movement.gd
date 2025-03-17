@@ -24,12 +24,16 @@ extends CharacterBody3D
 @export var scanning_rotation_mult: float = 0.5
 @export var interaction_speed_mult: float = 0.3
 @export var interaction_rotation_mult: float = 0.3
+@export var stunned_speed_mult: float = 0.0       # No movement during stun
+@export var stunned_rotation_mult: float = 0.0    # No rotation during stun
+@export var stunned_recovery_speed_mult: float = 0.3  # Slow movement during recovery
 
 const JUMP_DURATION: float = 0.6
 
 # Node references
 @onready var camera_rig: Node3D = $CameraRig
 @onready var mesh: Node3D = $meshy_snaut
+@onready var animation_tree = null
 
 # Movement state
 var move_direction: Vector3 = Vector3.ZERO
@@ -45,9 +49,16 @@ var jump_time: float = 0.0
 var is_jumping: bool = false
 var can_jump: bool = true
 
+# signals
+signal hard_landing(velocity)
+
 func _ready() -> void:
 	assert(camera_rig != null, "Camera rig node not found!")
 	assert(mesh != null, "Mesh node not found!")
+	
+	# Get reference to the animation tree
+	animation_tree = mesh.get_node("AnimationTree")
+	assert(animation_tree != null, "Animation tree not found!")
 	
 	if camera_rig.has_signal("camera_rotated"):
 		camera_rig.connect("camera_rotated", _on_camera_rotated)
@@ -56,7 +67,7 @@ func _on_camera_rotated(new_basis: Basis) -> void:
 	camera_basis = new_basis
 
 func _physics_process(delta: float) -> void:
-	if not GameManager.can_player_move():
+	if not GameManager.can_player_move() && GameManager.gameplay_state != GameManager.GameplayState.STUNNED:
 		return
 		
 	var on_floor = is_on_floor()
@@ -74,7 +85,7 @@ func _physics_process(delta: float) -> void:
 	var rotation_modifier = _get_rotation_modifier()
 	
 	# Jump and gravity handling
-	if Input.is_action_just_pressed("jump") and can_jump and on_floor:
+	if Input.is_action_just_pressed("jump") and can_jump and on_floor and speed_modifier > 0:
 		_initiate_jump()
 	
 	_update_jump_state(delta)
@@ -102,7 +113,7 @@ func _update_jump_state(delta: float) -> void:
 
 func _handle_movement(delta: float, on_floor: bool, speed_mod: float, rot_mod: float) -> void:
 	var input_dir = Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	var is_running = Input.is_action_pressed("run")
+	var is_running = Input.is_action_pressed("run") && GameManager.gameplay_state == GameManager.GameplayState.NORMAL
 	
 	# Movement direction calculation
 	move_direction = Vector3.ZERO
@@ -138,6 +149,12 @@ func _get_speed_modifier() -> float:
 			return scanning_speed_mult
 		GameManager.GameplayState.INTERACTING:
 			return interaction_speed_mult
+		GameManager.GameplayState.STUNNED:
+			# Use recovering speed if in stand animation
+			if animation_tree && animation_tree.current_state == animation_tree.AnimState.STAND:
+				return stunned_recovery_speed_mult
+			else:
+				return stunned_speed_mult
 		_:
 			return 1.0
 
@@ -147,6 +164,8 @@ func _get_rotation_modifier() -> float:
 			return scanning_rotation_mult
 		GameManager.GameplayState.INTERACTING:
 			return interaction_rotation_mult
+		GameManager.GameplayState.STUNNED:
+			return stunned_rotation_mult
 		_:
 			return 1.0
 
@@ -201,3 +220,8 @@ func _handle_landing() -> void:
 	
 	velocity.x *= (1.0 - landing_intensity * 0.3)
 	velocity.z *= (1.0 - landing_intensity * 0.3)
+	
+	# Signal the animation controller if this is a hard landing
+	if abs(landing_velocity) > 8.0:
+		print("hard landing")
+		hard_landing.emit(landing_velocity)

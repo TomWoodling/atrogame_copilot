@@ -13,7 +13,8 @@ enum GameplayState {
 	INVENTORY,
 	SCANNING,  # New state for scanning
 	INTERACTING,  # For future NPC interactions
-	CUTSCENE  # For cinematic moments
+	CUTSCENE,  # For cinematic moments
+	STUNNED   # When player cannot move due to e.g. falling too far or hazards
 }
 
 var current_state: GameState = GameState.INITIALIZING
@@ -68,7 +69,9 @@ func _set_gameplay_state(new_state: GameplayState) -> void:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 			inventory_state_changed.emit(true)
 		GameplayState.SCANNING:
-			# Scanning might want reduced mouse sensitivity
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		GameplayState.STUNNED:
+			# Keep mouse captured during stunned state
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func pause_game() -> void:
@@ -107,4 +110,12 @@ func start_scanning() -> void:
 
 func stop_scanning() -> void:
 	if gameplay_state == GameplayState.SCANNING:
+		_set_gameplay_state(GameplayState.NORMAL)
+		
+func enter_stunned() -> void:
+	if current_state == GameState.PLAYING:
+		_set_gameplay_state(GameplayState.STUNNED)
+
+func exit_stunned() -> void:
+	if gameplay_state == GameplayState.STUNNED:
 		_set_gameplay_state(GameplayState.NORMAL)
