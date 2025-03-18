@@ -1,12 +1,13 @@
+# Modified player_animation.gd to handle animation state transitions more cleanly
 extends AnimationTree
 
 # Node references
 @onready var parent: CharacterBody3D = get_parent().get_parent()
 @onready var animation_state_machine: AnimationNodeStateMachinePlayback = get("parameters/playback")
+@onready var fall_detector: FallDetector = parent.get_node("FallDetector")
 
 # Animation parameters
 @export_group("Animation Thresholds")
-@export var falling_threshold: float = -8.0  # Negative value for downward velocity
 @export var splat_anim_duration: float = 1.0  # Estimated duration of splat animation
 @export var stand_anim_duration: float = 1.2  # Estimated duration of stand animation
 
@@ -38,9 +39,9 @@ func _ready() -> void:
 	# Store initial gameplay state
 	previous_gameplay_state = GameManager.gameplay_state
 	
-	# Connect to animation finished signal
-	#if animation_state_machine.has_method("connect"):
-		#animation_state_machine.connect("animation_finished", _on_animation_finished)
+	# Connect to fall detector signals
+	fall_detector.falling_state_changed.connect(_on_falling_state_changed)
+	fall_detector.player_landed.connect(_on_player_landed)  # Connect to new simplified signal
 
 func _physics_process(delta: float) -> void:
 	if animation_locked:
@@ -68,6 +69,10 @@ func _physics_process(delta: float) -> void:
 	var speed = Vector2(velocity.x, velocity.z).length()
 	var is_running = Input.is_action_pressed("run") && GameManager.gameplay_state == GameManager.GameplayState.NORMAL
 	
+	# Skip animation updates if we're in FALLING state (let the fall detector handle it)
+	if current_state == AnimState.FALLING:
+		return
+	
 	# Determine appropriate animation state
 	var target_state = _determine_animation_state(on_floor, speed, velocity.y, is_running)
 	
@@ -78,8 +83,26 @@ func _physics_process(delta: float) -> void:
 	# Update tracking variables
 	was_on_floor = on_floor
 
+func _on_falling_state_changed(is_falling: bool) -> void:
+	if is_falling:
+		_apply_animation_state(AnimState.FALLING)
+	else:
+		# If we stopped falling but didn't land yet (e.g., started ascending again),
+		# revert to an appropriate animation state
+		if current_state == AnimState.FALLING:
+			var on_floor = parent.is_on_floor()
+			var velocity = parent.velocity
+			var speed = Vector2(velocity.x, velocity.z).length()
+			var is_running = Input.is_action_pressed("run")
+			_apply_animation_state(_determine_animation_state(on_floor, speed, velocity.y, is_running))
+
+func _on_player_landed() -> void:
+	# If we were in FALLING state and the player landed, play SPLAT animation
+	if current_state == AnimState.FALLING:
+		_apply_animation_state(AnimState.SPLAT)
+
 func _determine_animation_state(on_floor: bool, speed: float, y_velocity: float, is_running: bool) -> int:
-	# Handle jumping - parent.is_jumping is checked from player_movement.gd
+	# Handle jumping - is_jumping is checked from player_movement
 	if parent.is_jumping:
 		return AnimState.JUMP
 	
@@ -94,13 +117,9 @@ func _determine_animation_state(on_floor: bool, speed: float, y_velocity: float,
 			return AnimState.IDLE
 	
 	# If not on floor and not jumping, use Jump animation for small drops
-	# Note: FALLING state is now handled by the fall_detector
 	return AnimState.JUMP
-	
-	# Default to current state if no conditions are met
-	return current_state
 
-func _apply_animation_state(new_state: int) -> void:
+func _apply_animation_state(new_state: AnimState) -> void:
 	# Only update if there's a change and we're not in a locked sequence
 	if new_state == current_state or animation_locked:
 		return
@@ -151,11 +170,10 @@ func _play_success_animation() -> void:
 		var is_running = Input.is_action_pressed("run")
 		_apply_animation_state(_determine_animation_state(on_floor, speed, parent.velocity.y, is_running))
 
+# This function is connected to the animation tree's "animation_finished" signal in player.tscn
 func _on_animation_finished(anim_name: String) -> void:
-	# Handle animation sequence completions
 	match anim_name:
 		"Splat":
-			print("splat")
 			# Automatically transition to Stand animation
 			_apply_animation_state(AnimState.STAND)
 		"Stand":

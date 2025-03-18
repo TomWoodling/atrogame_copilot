@@ -15,7 +15,7 @@ const STAGES_PER_CHUNK = {
 	"min": 1,
 	"max": 3,
 	"min_spacing": 20.0,
-	"height_offset": 0.5  # Explicit height offset for better accessibility
+	"height_offset": 1.0  # Explicit height offset for better accessibility
 }
 # Encounter type weights and configurations
 # Modify the ENCOUNTER_TYPES constant to reflect our current needs

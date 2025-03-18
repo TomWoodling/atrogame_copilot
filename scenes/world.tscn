@@ -1,8 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://ccf2svooax62g"]
+[gd_scene load_steps=4 format=3 uid="uid://ccf2svooax62g"]
 
 [ext_resource type="Script" path="res://scripts/world.gd" id="1_bujvt"]
 [ext_resource type="PackedScene" uid="uid://cljdntlhmpbed" path="res://scenes/world_generator.tscn" id="1_uy2gm"]
-[ext_resource type="Environment" uid="uid://dgagd6hrva8tm" path="res://assets/mats/generic_level.tres" id="2_4g8kc"]
 [ext_resource type="PackedScene" uid="uid://d2bnjwmqvrd2f" path="res://scenes/player.tscn" id="4_rfup5"]
 
 [node name="world" type="Node3D"]
@@ -11,10 +10,9 @@ script = ExtResource("1_bujvt")
 [node name="world_generator" parent="." instance=ExtResource("1_uy2gm")]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = ExtResource("2_4g8kc")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -0.937592, 0.347738, 0, -0.347738, -0.937592, 0, 16.5866, -26.4886)
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 47.414, 0)
 
 [node name="holdingArea" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.12944, 0)

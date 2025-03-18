@@ -1,3 +1,4 @@
+# Modified player_movement.gd to handle movement physics
 extends CharacterBody3D
 
 @export_group("Astronaut Movement")
@@ -27,7 +28,7 @@ extends CharacterBody3D
 @export var stunned_speed_mult: float = 0.0       # No movement during stun
 @export var stunned_rotation_mult: float = 0.0    # No rotation during stun
 @export var stunned_recovery_speed_mult: float = 0.3  # Slow movement during recovery
-@export var original_air_control: float = 0.0
+@export var original_air_control: float = 1.0
 
 const JUMP_DURATION: float = 0.6
 
@@ -35,6 +36,7 @@ const JUMP_DURATION: float = 0.6
 @onready var camera_rig: Node3D = $CameraRig
 @onready var mesh: Node3D = $meshy_snaut
 @onready var animation_tree = null
+@onready var fall_detector: FallDetector = $FallDetector
 
 # Movement state
 var move_direction: Vector3 = Vector3.ZERO
@@ -48,10 +50,12 @@ var current_speed: float = 0.0
 var jump_time: float = 0.0
 var is_jumping: bool = false
 var can_jump: bool = true
+var is_falling: bool = false
 
 func _ready() -> void:
 	assert(camera_rig != null, "Camera rig node not found!")
 	assert(mesh != null, "Mesh node not found!")
+	assert(fall_detector != null, "Fall detector node not found!")
 	
 	# Store original air control value
 	original_air_control = air_control
@@ -60,11 +64,34 @@ func _ready() -> void:
 	animation_tree = mesh.get_node("AnimationTree")
 	assert(animation_tree != null, "Animation tree not found!")
 	
+	# Connect to camera signals
 	if camera_rig.has_signal("camera_rotated"):
 		camera_rig.connect("camera_rotated", _on_camera_rotated)
+	
+	# Connect to fall detector signals
+	fall_detector.falling_state_changed.connect(_on_falling_state_changed)
+	fall_detector.player_landed.connect(_on_player_landed)  # Update to new signal name
 
 func _on_camera_rotated(new_basis: Basis) -> void:
 	camera_basis = new_basis
+
+func _on_falling_state_changed(falling: bool) -> void:
+	is_falling = falling
+	
+	# Adjust air control based on falling state
+	if falling:
+		# Reduce air control during free-fall to make it feel more weighty
+		var falling_air_control_factor = 0.7
+		air_control = original_air_control * falling_air_control_factor
+	else:
+		# Reset air control when not falling
+		air_control = original_air_control
+
+func _on_player_landed() -> void:
+	# Apply landing effect to velocity if needed
+	# This function now just handles physics response to landing
+	# The animation will be handled by player_animation.gd
+	pass
 
 func _physics_process(delta: float) -> void:
 	if not GameManager.can_player_move() && GameManager.gameplay_state != GameManager.GameplayState.STUNNED:
@@ -109,17 +136,6 @@ func _update_jump_state(delta: float) -> void:
 			velocity.y = jump_strength * jump_curve * 2.0
 	elif !is_on_floor():
 		velocity.y = move_toward(velocity.y, -max_fall_speed, gravity * delta)
-
-
-func set_falling(is_falling: bool) -> void:
-	# If we are falling from a significant height, we should adjust the air control
-	if is_falling:
-		# Reduce air control during free-fall to make it feel more weighty
-		var falling_air_control_factor = 0.7
-		air_control = original_air_control * falling_air_control_factor
-	else:
-		# Reset air control when not falling
-		air_control = original_air_control
 
 func _handle_movement(delta: float, on_floor: bool, speed_mod: float, rot_mod: float) -> void:
 	var input_dir = Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -225,18 +241,9 @@ func _apply_jump_horizontal_momentum() -> void:
 		velocity.z = horizontal_jump.z * (1.0 - air_damping)
 
 func _handle_landing() -> void:
-	# We no longer need to check landing velocity here since fall_detector handles that
 	# Just apply landing cushion to soften vertical velocity
 	velocity.y = velocity.y / landing_cushion
 	
 	# Apply a flat reduction to horizontal movement upon landing
-	# Using a constant value since the fall_detector is now responsible for 
-	# determining if this was a hard landing or not
 	velocity.x *= 0.7
 	velocity.z *= 0.7
-
-func trigger_splat() -> void:
-	pass
-	# Notify the animation system
-	#if animation_tree:
-		#animation_tree._apply_animation_state(animation_tree.AnimState.SPLAT)
