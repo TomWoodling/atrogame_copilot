@@ -23,14 +23,20 @@ v0.3-alpha:
     Pause handling
 
 v0.4-alpha:
+
+    handle https://github.com/TomWoodling/atrogame_copilot/issues/1
+    add basic scanning mechanics
+    begin to fill inventory tabs
+    add player animations
+    improve gameworld lighting
+
+v0.5-alpha
 (to-do)
-
-handle https://github.com/TomWoodling/atrogame_copilot/issues/1
-
-add basic scanning mechanics
-
-begin to fill inventory tabs
-
-add player animations
-
-improve gameworld lighting
+add more scannable items
+make encounters more interactive
+more npcs
+rationalize world generation flow
+add sound
+add mission structure
+add encounter and mission data to inventory
+add basic main & pause menus
