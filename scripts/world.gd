@@ -39,6 +39,9 @@ func _process(delta: float) -> void:
 	
 	# Update sky based on time of day
 	update_sky(time_of_day)
+	
+	# Update environment settings based on time of day
+	update_environment(time_of_day)
 
 func create_environment() -> void:
 	# Find or create WorldEnvironment node
@@ -84,8 +87,8 @@ func setup_sky_shader() -> void:
 		exoplanet_sky_material.set_shader_parameter("cloud_noise_texture", cloud_noise_texture)
 	
 	# Set initial shader parameters
-	exoplanet_sky_material.set_shader_parameter("sky_top_color", Color(0.1, 0.2, 0.4))
-	exoplanet_sky_material.set_shader_parameter("sky_horizon_color", Color(0.5, 0.7, 0.8))
+	exoplanet_sky_material.set_shader_parameter("sky_top_color", Color(0.1, 0.25, 0.4))
+	exoplanet_sky_material.set_shader_parameter("sky_horizon_color", Color(0.5, 0.7, 0.65))
 	exoplanet_sky_material.set_shader_parameter("sky_bottom_color", Color(0.2, 0.3, 0.5))
 	exoplanet_sky_material.set_shader_parameter("sky_horizon_blend", 0.1)
 	exoplanet_sky_material.set_shader_parameter("sky_curve", 1.5)
@@ -94,14 +97,14 @@ func setup_sky_shader() -> void:
 	exoplanet_sky_material.set_shader_parameter("sun_size", 0.2)
 	exoplanet_sky_material.set_shader_parameter("sun_blur", 0.5)
 	exoplanet_sky_material.set_shader_parameter("second_sun_size", 0.1)
-	exoplanet_sky_material.set_shader_parameter("cloud_coverage", 0.5)
-	exoplanet_sky_material.set_shader_parameter("cloud_thickness", 2.0)
-	exoplanet_sky_material.set_shader_parameter("cloud_color1", Color(1.0, 1.0, 1.0))
-	exoplanet_sky_material.set_shader_parameter("cloud_color2", Color(0.8, 0.8, 0.9))
+	exoplanet_sky_material.set_shader_parameter("cloud_coverage", 0.6)
+	exoplanet_sky_material.set_shader_parameter("cloud_thickness", 2.2)
+	exoplanet_sky_material.set_shader_parameter("cloud_color1", Color(0.95, 1.0, 0.98))
+	exoplanet_sky_material.set_shader_parameter("cloud_color2", Color(0.8, 0.85, 0.9))
 	exoplanet_sky_material.set_shader_parameter("cloud_speed", 0.003)
 	exoplanet_sky_material.set_shader_parameter("enable_aurora", true)
-	exoplanet_sky_material.set_shader_parameter("aurora_color1", Color(0.1, 0.6, 0.3))
-	exoplanet_sky_material.set_shader_parameter("aurora_color2", Color(0.2, 0.2, 0.8))
+	exoplanet_sky_material.set_shader_parameter("aurora_color1", Color(0.1, 0.8, 0.3))
+	exoplanet_sky_material.set_shader_parameter("aurora_color2", Color(0.3, 0.3, 0.8))
 	exoplanet_sky_material.set_shader_parameter("aurora_intensity", 1.0)
 	exoplanet_sky_material.set_shader_parameter("aurora_speed", 0.5)
 	exoplanet_sky_material.set_shader_parameter("enable_stars", true)
@@ -115,6 +118,41 @@ func setup_sky_shader() -> void:
 	env.sky = sky
 	
 	print("Exoplanet sky shader set up successfully.")
+
+func update_environment(time: float) -> void:
+	if not env:
+		return
+		
+	# Calculate day factor (-1 to 1, where 0 is noon, -1 is midnight)
+	var day_factor = sin(time * TAU)
+	
+	# Adjust ambient light based on time of day
+	var ambient_energy = remap(day_factor, -1.0, 1.0, 0.2, 0.8)
+	env.ambient_light_energy = ambient_energy
+	
+	# Adjust sky contribution to ambient based on time
+	env.ambient_light_sky_contribution = remap(day_factor, -1.0, 1.0, 0.3, 0.7)
+	
+	# Adjust tonemap exposure (brighter during day, darker at night)
+	env.tonemap_exposure = remap(day_factor, -1.0, 1.0, 1.2, 0.9)
+	
+	# Glow is more pronounced at night
+	env.glow_intensity = remap(day_factor, -1.0, 1.0, 0.8, 0.5)
+	
+	# Adjust volumetric fog properties for day/night effect
+	var fog_density = remap(day_factor, -1.0, 1.0, 0.03, 0.02)
+	env.volumetric_fog_density = fog_density
+	
+	# Fog color more bluish at night, slight green tint during day (alien atmosphere)
+	if day_factor > 0:
+		# Day
+		env.volumetric_fog_albedo = Color(0.1, 0.15, 0.12)
+	else:
+		# Night
+		env.volumetric_fog_albedo = Color(0.08, 0.08, 0.18)
+	
+	# SSAO more pronounced during night for more dramatic shadows
+	env.ssao_intensity = remap(day_factor, -1.0, 1.0, 2.5, 1.8)
 
 func update_sky(time: float) -> void:
 	if not exoplanet_sky_material:
@@ -185,39 +223,56 @@ func update_sun_direction(time: float) -> void:
 		sun.light_color = Color(0.6, 0.6, 0.8)  # Bluish night light
 
 func apply_environment_settings() -> void:
-	# Using cached 'env' instead of retrieving world_env repeatedly
+	# Fog settings - keeping as they are per your request
 	env.fog_enabled = true
 	env.fog_density = 0.03
 	env.fog_sky_affect = 0.1
 	env.volumetric_fog_enabled = true
 	env.volumetric_fog_density = 0.02
 	env.volumetric_fog_albedo = Color(0.1, 0.1, 0.15)
-
+	
+	# Enhanced ambient light - slight color tint for alien feel
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+	env.ambient_light_sky_contribution = 0.65
+	env.ambient_light_energy = 0.8
+	
+	# Shadow settings
 	if sun:
 		sun.shadow_enabled = true
 		sun.shadow_bias = 0.03
 		sun.directional_shadow_max_distance = 300.0
-
-	# SSAO, tonemapping, glow & bloom settings...
+	
+	# SSAO settings for more realistic terrain depth
 	env.ssao_enabled = true
-	env.ssao_radius = 2.8
-	env.ssao_intensity = 1.3
-	env.ssao_power = 2.0
-	env.ssao_detail = 1.2
+	env.ssao_radius = 2.0
+	env.ssao_intensity = 2.0
+	env.ssao_power = 1.8
+	env.ssao_detail = 1.0
 	env.ssao_horizon = 0.08
-	env.ssao_sharpness = 0.97
-
+	env.ssao_sharpness = 0.98
+	
+	# Tonemap settings for alien atmosphere
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_exposure = 1.2
-	env.tonemap_white = 1.1
-
+	env.tonemap_exposure = 1.1
+	env.tonemap_white = 1.0
+	
+	# Glow settings for atmospheric effect
 	env.glow_enabled = true
-	env.glow_intensity = 1.0
-	env.glow_strength = 1.3
-	env.glow_bloom = 0.2
-	env.glow_hdr_threshold = 1.15
-
-	print("Phase 3: Advanced environment settings applied.")
+	env.set_glow_level(0,0.0)
+	env.set_glow_level(1,0.3)
+	env.set_glow_level(2,1.0)
+	env.set_glow_level(3,0.5)
+	env.set_glow_level(4,0.2)
+	env.set_glow_level(5,0.0)
+	env.set_glow_level(6,0.0)
+	env.glow_intensity = 0.6
+	env.glow_strength = 1.0
+	env.glow_bloom = 0.1
+	env.glow_hdr_threshold = 1.2
+	env.glow_hdr_scale = 2.0
+	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
+	
+	print("Enhanced environment settings applied for terraforming exoplanet.")
 
 func setup_advanced_effects() -> void:
 	# Adjustments based on planet proximity
@@ -250,3 +305,6 @@ func _remove_holding_area():
 		# Wait a short moment to ensure world generation has started
 		await get_tree().create_timer(0.5).timeout
 		holding_area.queue_free()
+
+func remap(value: float, from_low: float, from_high: float, to_low: float, to_high: float) -> float:
+	return (value - from_low) / (from_high - from_low) * (to_high - to_low) + to_low
