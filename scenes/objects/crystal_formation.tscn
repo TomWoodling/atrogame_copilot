@@ -1,0 +1,30 @@
+[gd_scene load_steps=6 format=3 uid="uid://dmwhq64os745m"]
+
+[ext_resource type="Script" path="res://scripts/scannable_object.gd" id="1_m3puf"]
+[ext_resource type="PackedScene" uid="uid://bkvwpuxu4rhcn" path="res://assets/decor/cute_rock2.glb" id="1_t53d5"]
+[ext_resource type="Script" path="res://scripts/collection_item_data.gd" id="2_jcs2c"]
+
+[sub_resource type="Resource" id="Resource_ait6b"]
+script = ExtResource("2_jcs2c")
+id = 4
+category = 2
+label = "Crystal Formation"
+description = "Quartz going on here then?"
+icon_path = "res://assets/icons/crystal_formation_icon.png"
+model_scene_path = ""
+rarity_tier = 2
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_rg5lq"]
+
+[node name="crystal_formation" type="StaticBody3D"]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, 0, 0.62763, 0)
+collision_layer = 9
+collision_mask = 0
+script = ExtResource("1_m3puf")
+collection_data = SubResource("Resource_ait6b")
+
+[node name="scannable_object" parent="." instance=ExtResource("1_t53d5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0254318, 0, -0.150969)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_rg5lq")

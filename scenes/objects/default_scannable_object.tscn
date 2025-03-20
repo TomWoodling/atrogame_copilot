@@ -4,8 +4,6 @@
 [ext_resource type="Texture2D" uid="uid://d1k2653078dyf" path="res://assets/textures/embers.png" id="2_6jdgb"]
 [ext_resource type="Resource" uid="uid://dmytjoevfo3r4" path="res://resources/collection_items/default_item.tres" id="2_qy3bq"]
 
-[sub_resource type="SphereMesh" id="SphereMesh_default"]
-
 [sub_resource type="SphereShape3D" id="SphereShape3D_col"]
 radius = 0.6
 
@@ -15,7 +13,7 @@ emission_sphere_radius = 0.6
 spread = 180.0
 gravity = Vector3(0, 0, 0)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4sdl6"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4lgf2"]
 transparency = 1
 cull_mode = 2
 shading_mode = 0
@@ -23,16 +21,17 @@ vertex_color_use_as_albedo = true
 albedo_texture = ExtResource("2_6jdgb")
 
 [sub_resource type="QuadMesh" id="QuadMesh_4lqtg"]
-material = SubResource("StandardMaterial3D_4sdl6")
+material = SubResource("StandardMaterial3D_4lgf2")
+
+[sub_resource type="SphereMesh" id="SphereMesh_default"]
 
 [node name="DefaultScannableObject" type="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.371854, 0)
 collision_layer = 9
 collision_mask = 0
 script = ExtResource("1_scan")
 collection_data = ExtResource("2_qy3bq")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("SphereMesh_default")
+is_default = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("SphereShape3D_col")
@@ -47,8 +46,12 @@ omni_range = 1.5
 visible = false
 emitting = false
 amount = 16
+lifetime = 1.2
 one_shot = true
 explosiveness = 0.25
 visibility_aabb = AABB(-1, -1, -1, 2, 2, 2)
 process_material = SubResource("ParticleProcessMaterial_f1ar3")
 draw_pass_1 = SubResource("QuadMesh_4lqtg")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_default")

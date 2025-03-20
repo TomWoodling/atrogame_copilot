@@ -30,7 +30,6 @@ func _on_scan_started(target: Node3D) -> void:
 		
 	current_target = target
 	GameManager.start_scanning()
-	
 	progress_bar.value = 0
 	if target is ScannableObject and target.collection_data:
 		target_info.text = target.collection_data.label

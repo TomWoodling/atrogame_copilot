@@ -66,6 +66,7 @@ func start_scan(target: Node3D) -> void:
 	scan_progress = 0.0
 	GameManager.start_scanning()
 	scan_started.emit(target)
+	target.start_scan_effect()
 
 func _complete_scan() -> void:
 	if not current_target or not current_target.collection_data:

@@ -69,7 +69,7 @@ func _get_stage_size(type: String) -> Vector2:
 		_: return Vector2(1.0, 1.0)
 
 func _resize_stage(size: Vector2) -> bool:
-	print("resizing")
+	#print("resizing")
 	# Safety check for mesh_instance
 	if not is_instance_valid(mesh_instance):
 		push_warning("mesh_instance not valid during resize attempt")

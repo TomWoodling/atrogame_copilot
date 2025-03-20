@@ -40,7 +40,7 @@ const SCANNABLE_SPAWN_CONFIG = {
 		"max": 4
 	},
 	"min_spacing": 15.0,  # Minimum distance between scannable objects
-	"height_offset": 0.5   # How far above terrain to spawn
+	"height_offset": 0.0   # How far above terrain to spawn
 }
 
 # Internal state
@@ -51,7 +51,7 @@ var current_chunk: Vector2i
 var player: Node3D
 
 @onready var encounter_stage: PackedScene = preload("res://scenes/stages/encounter_stage.tscn")
-@onready var scannable_object: PackedScene = preload("res://scenes/objects/default_scannable_object.tscn")
+@onready var scannable_object: PackedScene = preload("res://scenes/objects/basic_tree.tscn")
 
 func _ready() -> void:
 	if not encounter_stage:
@@ -314,7 +314,7 @@ func select_encounter_type() -> String:
 	return ENCOUNTER_TYPES.keys()[0]
 
 # Update create_stage function with the new height offset
-func create_stage(position: Vector3, encounter_type: String) -> Node3D:
+func create_stage(posi: Vector3, encounter_type: String) -> Node3D:
 	var stage := encounter_stage.instantiate() as Node3D
 	if not stage:
 		push_error("WorldGenerator: Failed to instantiate encounter_stage scene")
@@ -323,17 +323,17 @@ func create_stage(position: Vector3, encounter_type: String) -> Node3D:
 	# Name the stage
 	stage.name = "EncounterStage_%s_%d_%d" % [
 		encounter_type, 
-		int(position.x), 
-		int(position.z)
+		int(posi.x), 
+		int(posi.z)
 	]
 	
 	# Calculate base terrain height
 	var terrain_height := get_height_at_point(position)
-	position.y = terrain_height
-	stage.position = position
+	posi.y = terrain_height
+	stage.position = posi
 	
 	# Get surrounding terrain information
-	var surrounding_info := analyze_surrounding_terrain(position, 3.0)
+	var surrounding_info := analyze_surrounding_terrain(posi, 3.0)
 	
 	# Use the explicit height offset from constants
 	stage.position.y += STAGES_PER_CHUNK.height_offset
