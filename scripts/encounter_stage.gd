@@ -29,23 +29,32 @@ func setup_encounter(config: Dictionary) -> void:
 	_apply_setup(config)
 
 func _apply_setup(config: Dictionary) -> void:
-	# Verify our required nodes exist before proceeding
-	if not mesh_instance or not collision_shape:
-		push_warning("Required nodes not initialized during setup")
-		pending_setup = config  # Store for retry after ready
+	# Safety check for required config
+	if not config.has("type"):
+		push_error("Encounter stage setup missing required 'type' parameter")
 		return
 		
+	# Ensure our nodes are properly initialized
+	 # Check if nodes are ready
+	if not is_instance_valid(mesh_instance) or not is_instance_valid(collision_shape):
+		# Defer the setup until nodes are ready
+		call_deferred("_apply_setup", config)
+		return
+	
 	# Adjust stage size based on type
 	var stage_size := _get_stage_size(config.type)
-	_resize_stage(stage_size)
+	if not _resize_stage(stage_size):
+		push_error("Failed to resize stage")
+		return
 	
-	# Ensure proper height above terrain
-	var height_diff: float = config.surrounding_height - config.terrain_height
-	if height_diff > 0:
-		position.y += height_diff
+	# this is not needed as determined by world_generator.gd
+	#if config.has("surrounding_height") and config.has("terrain_height"):
+	#	var height_diff: float = config.surrounding_height - config.terrain_height
+	#	if height_diff > 0:
+	#		position.y += height_diff
 	
 	# Configure interaction zone if it exists
-	if interaction_zone and interaction_zone.has_method("configure"):
+	if is_instance_valid(interaction_zone) and interaction_zone.has_method("configure"):
 		interaction_zone.configure(config)
 	
 	# Spawn type-specific objects
@@ -59,24 +68,43 @@ func _get_stage_size(type: String) -> Vector2:
 		"special_challenge": return Vector2(8.0, 8.0)  # Larger stage for special challenges
 		_: return Vector2(1.0, 1.0)
 
-func _resize_stage(size: Vector2) -> void:
+func _resize_stage(size: Vector2) -> bool:
+	print("resizing")
 	# Safety check for mesh_instance
 	if not is_instance_valid(mesh_instance):
 		push_warning("mesh_instance not valid during resize attempt")
-		return
-		
-	var mesh := mesh_instance.mesh as BoxMesh
-	if mesh:
-		mesh.size = Vector3(size.x, 0.1, size.y)
-	else:
-		push_warning("mesh not found or not BoxMesh type")
-		return
-		
-	# Safety check for collision_shape
+		return false
+	
+	# Check if mesh exists and is the correct type
+	var mesh := mesh_instance.mesh
+	if not mesh:
+		push_warning("No mesh found on mesh_instance")
+		return false
+	
+	if not mesh is BoxMesh:
+		push_warning("Mesh is not a BoxMesh, found: " + mesh.get_class())
+		return false
+	
+	# Create a unique copy of the mesh before modifying it
+	var box_mesh := mesh.duplicate() as BoxMesh
+	mesh_instance.mesh = box_mesh  # Assign the unique copy back
+	box_mesh.size = Vector3(size.x, 0.1, size.y)
+	
+	# Resize the collision shape - also make it unique
 	if is_instance_valid(collision_shape):
-		var shape := collision_shape.shape as BoxShape3D
-		if shape:
-			shape.size = Vector3(size.x, 0.1, size.y)
+		var shape := collision_shape.shape
+		if shape is BoxShape3D:
+			var unique_shape := shape.duplicate() as BoxShape3D
+			collision_shape.shape = unique_shape  # Assign the unique copy back
+			unique_shape.size = Vector3(size.x, 0.1, size.y)
+		else:
+			push_warning("Collision shape is not a BoxShape3D")
+			return false
+	else:
+		push_warning("collision_shape not valid during resize attempt")
+		return false
+	
+	return true
 			
 func _spawn_encounter_object(type: String) -> void:
 	if current_object:

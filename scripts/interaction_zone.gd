@@ -10,12 +10,18 @@ func configure(config: Dictionary) -> void:
 	encounter_type = config.type
 	
 	# Set appropriate collision shape size based on type
-	var shape: BoxShape3D = $CollisionShape3D.shape as BoxShape3D
-	if shape:
-		match encounter_type:
-			"npc": shape.size = Vector3(2.0, 1.5, 2.0)
-			"collection": shape.size = Vector3(1.5, 1.0, 1.5)
-			"info": shape.size = Vector3(1.0, 1.0, 1.0)
+	var shape_node := $CollisionShape3D
+	if shape_node:
+		var shape : BoxShape3D = shape_node.shape
+		if shape:
+			# Create a unique copy of the shape
+			var unique_shape := shape.duplicate() as BoxShape3D
+			shape_node.shape = unique_shape
+			
+			match encounter_type:
+				"npc": unique_shape.size = Vector3(2.0, 1.5, 2.0)
+				"collection": unique_shape.size = Vector3(1.5, 1.0, 1.5)
+				"info": unique_shape.size = Vector3(1.0, 1.0, 1.0)
 
 	# Set custom message based on location or type if needed
 	custom_message = _get_contextual_message(config)
