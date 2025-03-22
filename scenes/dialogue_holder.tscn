@@ -1,0 +1,43 @@
+[gd_scene load_steps=2 format=3 uid="uid://cscbxo2w3nfmi"]
+
+[ext_resource type="Script" path="res://scripts/dialogue_holder.gd" id="1_6tp4o"]
+
+[node name="dialogueHolder" type="Node3D"]
+script = ExtResource("1_6tp4o")
+
+[node name="diaFrame" type="Node3D" parent="."]
+
+[node name="diaLogs" type="Node3D" parent="diaFrame"]
+
+[node name="diaOne" type="Label3D" parent="diaFrame/diaLogs"]
+unique_name_in_owner = true
+billboard = 2
+alpha_cut = 1
+modulate = Color(1, 1, 0.913725, 1)
+outline_modulate = Color(0.201527, 0.201527, 0.201527, 1)
+font_size = 18
+outline_size = 6
+autowrap_mode = 2
+width = 250.0
+
+[node name="diaTwo" type="Label3D" parent="diaFrame/diaLogs"]
+unique_name_in_owner = true
+billboard = 2
+alpha_cut = 1
+modulate = Color(0.756235, 0.999208, 0.774695, 1)
+outline_modulate = Color(0.959354, 0.137048, 0.97866, 1)
+font_size = 18
+outline_size = 6
+autowrap_mode = 2
+width = 250.0
+
+[node name="camPivot" type="Node3D" parent="diaFrame"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.452402)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="diaFrame/camPivot"]
+spring_length = 0.6
+
+[node name="diaCam" type="Camera3D" parent="diaFrame/camPivot/SpringArm3D"]
+unique_name_in_owner = true
+current = true

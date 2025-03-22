@@ -1,0 +1,92 @@
+[gd_scene load_steps=12 format=3 uid="uid://bucmomflbhls0"]
+
+[ext_resource type="PackedScene" uid="uid://dvliolwcc40p8" path="res://assets/landing_pad/crater2.glb" id="1_1r2dn"]
+[ext_resource type="Script" path="res://scripts/landing_pad.gd" id="1_h3s52"]
+[ext_resource type="PackedScene" uid="uid://dw3wva7rwlwun" path="res://scenes/rocket.tscn" id="2_bw0of"]
+[ext_resource type="Texture2D" uid="uid://hplgbvyrej4n" path="res://textures/moon_tile_2.png" id="3_8kt51"]
+[ext_resource type="Texture2D" uid="uid://ceiujs2ab0uk4" path="res://textures/Dust-Particles-PNG-Image-Transparent.png" id="5_fkv2k"]
+[ext_resource type="Environment" uid="uid://8ejtpobw34d6" path="res://mats/base_env.tres" id="6_bu6y2"]
+[ext_resource type="Script" path="res://scripts/csg_box_3d.gd" id="6_u7irw"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_25qgt"]
+size = Vector3(0.794189, 1, 0.63269)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g2row"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("5_fkv2k")
+
+[sub_resource type="SphereMesh" id="SphereMesh_g4i8a"]
+material = SubResource("StandardMaterial3D_g2row")
+
+[sub_resource type="Curve" id="Curve_w84jx"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 1.4, 0.0, 0, 0]
+point_count = 2
+
+[node name="landing_pad" type="Node3D"]
+script = ExtResource("1_h3s52")
+
+[node name="crater2" parent="." instance=ExtResource("1_1r2dn")]
+transform = Transform3D(2, 0, 0, 0, 1.75685, -0.955759, 0, 0.955759, 1.75685, -0.0866939, 1.19209e-07, -0.0826366)
+
+[node name="rocket" parent="." instance=ExtResource("2_bw0of")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00657319, 2.35505, -0.245216)
+axis_lock_angular_x = true
+gravity_scale = 0.1
+
+[node name="camPivot" type="Node3D" parent="rocket"]
+unique_name_in_owner = true
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0.00657319, 1.53365, 0.245216)
+
+[node name="zoneCam" type="Camera3D" parent="rocket/camPivot"]
+unique_name_in_owner = true
+transform = Transform3D(1, 3.68046e-08, 2.01295e-08, -3.68046e-08, 0.539491, 0.841991, 2.01295e-08, -0.841991, 0.539491, -8.49645e-08, 0.106091, 1.94376)
+current = true
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12098, -0.158856, 0)
+use_collision = true
+size = Vector3(1.02441, 0.0492061, 1)
+
+[node name="touchdown" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="touchdown"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0535889, 0, -0.183655)
+shape = SubResource("BoxShape3D_25qgt")
+
+[node name="dustCloud" type="CPUParticles3D" parent="touchdown"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.163637)
+emitting = false
+amount = 1
+lifetime = 1.4
+one_shot = true
+explosiveness = 1.0
+fixed_fps = 60
+mesh = SubResource("SphereMesh_g4i8a")
+gravity = Vector3(0, 0, 0)
+scale_amount_min = 3.0
+scale_amount_max = 6.0
+scale_amount_curve = SubResource("Curve_w84jx")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("6_bu6y2")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(1, 0, 0, 0, -0.194525, 0.980897, 0, -0.980897, -0.194525, 0, 7.96353, 0)
+
+[node name="Ground" type="CSGBox3D" parent="." groups=["Ground"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7252, -0.12742, -0.0693092)
+size = Vector3(35.9811, 0.001, 39.2891)
+script = ExtResource("6_u7irw")
+texture = ExtResource("3_8kt51")
+curvature = 0.02
+tile_factor = 100.0
+
+[connection signal="body_entered" from="touchdown" to="." method="_on_touchdown_body_entered"]
+
+[editable path="crater2"]
+[editable path="rocket"]
+[editable path="rocket/rocket_trellis_1"]

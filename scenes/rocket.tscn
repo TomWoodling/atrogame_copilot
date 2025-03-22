@@ -1,0 +1,66 @@
+[gd_scene load_steps=7 format=3 uid="uid://dw3wva7rwlwun"]
+
+[ext_resource type="PackedScene" uid="uid://d21lq8sqrkwrm" path="res://assets/rocket/rocket_trellis_1.glb" id="1_j5wrh"]
+[ext_resource type="Texture2D" uid="uid://8t0e5g2y4r2u" path="res://textures/dusty2.png" id="2_66xah"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_oqbkt"]
+height = 0.881589
+radius = 0.171474
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8weka"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("2_66xah")
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_rfbgr"]
+material = SubResource("StandardMaterial3D_8weka")
+
+[sub_resource type="Curve" id="Curve_nul65"]
+_data = [Vector2(0, 0), 0.0, 1.0, 0, 1, Vector2(1, 1), 1.0, 0.0, 1, 0]
+point_count = 2
+
+[node name="rocket" type="RigidBody3D" groups=["Rocket"]]
+
+[node name="rocket_trellis_1" parent="." instance=ExtResource("1_j5wrh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00663376, 0.469152, 0.0121427)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.522448, 0)
+shape = SubResource("CylinderShape3D_oqbkt")
+
+[node name="lights" type="Node3D" parent="."]
+
+[node name="OmniLight3D" type="OmniLight3D" parent="lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00974309, 0.100104, -0.169584)
+light_color = Color(1, 0, 0, 1)
+omni_range = 2.0
+omni_attenuation = 0.75
+
+[node name="OmniLight3D3" type="OmniLight3D" parent="lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.189836, 0.100104, 0.0394016)
+omni_range = 2.0
+omni_attenuation = 0.75
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00974309, 0.100104, 0.262115)
+light_color = Color(1, 0, 0, 1)
+omni_range = 2.0
+omni_attenuation = 0.75
+
+[node name="Landing" type="CPUParticles3D" parent="."]
+fixed_fps = 60
+mesh = SubResource("QuadMesh_rfbgr")
+emission_shape = 1
+emission_sphere_radius = 0.1
+gravity = Vector3(0, -6, 0)
+scale_amount_max = 1.4
+scale_amount_curve = SubResource("Curve_nul65")
+
+[editable path="rocket_trellis_1"]

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dy7rim8bf2uuc"]
+
+[ext_resource type="Script" path="res://scripts/state_manager.gd" id="1_56gwh"]
+
+[node name="stateManager" type="Node"]
+script = ExtResource("1_56gwh")

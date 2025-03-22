@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://chg8mo3jml7b8"]
+
+[ext_resource type="Environment" uid="uid://8ejtpobw34d6" path="res://mats/base_env.tres" id="1_25tpa"]
+[ext_resource type="Script" path="res://scripts/fin.gd" id="1_t0rvl"]
+
+[node name="fin" type="Node3D"]
+script = ExtResource("1_t0rvl")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("1_25tpa")
+
+[node name="Label3D" type="Label3D" parent="."]
+text = "THE END???"
+font_size = 48
+outline_size = 18
+
+[node name="SpringArm3D" type="SpringArm3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="SpringArm3D"]

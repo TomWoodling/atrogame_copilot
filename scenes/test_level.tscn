@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://8hyp6xj8kl1k"]
+
+[ext_resource type="PackedScene" uid="uid://chviiwgpxoqs8" path="res://scenes/snaut_2.tscn" id="2_kcqb8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_meli7"]
+
+[sub_resource type="Sky" id="Sky_5ay43"]
+
+[sub_resource type="Environment" id="Environment_tutjo"]
+background_mode = 2
+sky = SubResource("Sky_5ay43")
+
+[node name="test_level" type="Node3D"]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.63398, 0, 0.492767)
+use_collision = true
+size = Vector3(127.326, 1, 102.805)
+material = SubResource("ShaderMaterial_meli7")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CSGBox3D"]
+
+[node name="snaut2" parent="." instance=ExtResource("2_kcqb8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.72984, 0.5, 1.86307)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_tutjo")

@@ -1,0 +1,100 @@
+[gd_scene load_steps=14 format=3 uid="uid://7hbs1525kc22"]
+
+[ext_resource type="Script" path="res://scripts/scepter_1.gd" id="1_1467y"]
+[ext_resource type="PackedScene" uid="uid://b8okxixfcavwk" path="res://assets/scepter/scepter_1.glb" id="1_lg3wh"]
+[ext_resource type="Texture2D" uid="uid://b5a2x4e0j0occ" path="res://textures/sceptwinkle.png" id="2_tn7jo"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_a7mi2"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_paju4"]
+height = 1.2657
+radius = 0.112001
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qfrr3"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("2_tn7jo")
+
+[sub_resource type="QuadMesh" id="QuadMesh_du82u"]
+material = SubResource("StandardMaterial3D_qfrr3")
+size = Vector2(0.2, 0.2)
+
+[sub_resource type="Curve" id="Curve_b2bg7"]
+min_value = -360.0
+max_value = 360.0
+_data = [Vector2(0, -360), 0.0, 0.0, 0, 0, Vector2(1, 360), 1008.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_rypsf"]
+min_value = -200.0
+max_value = 200.0
+_data = [Vector2(0, -200), 0.0, 560.0, 0, 0, Vector2(1, 200), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_iianr"]
+max_value = 100.0
+_data = [Vector2(0, 0), 0.0, 195.604, 0, 1, Vector2(0.511236, 100), 0.0, 0.0, 0, 0, Vector2(1, 0), -204.598, 0.0, 1, 0]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_d6l43"]
+min_value = -360.0
+max_value = 360.0
+_data = [Vector2(0.0224719, 360), 0.0, 0.0, 0, 0, Vector2(0.331461, 272.967), 0.0, 0.0, 0, 0, Vector2(0.730337, -265.055), 0.0, 0.0, 0, 0, Vector2(1, -360), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_x5u0l"]
+_data = [Vector2(0, 0), 0.0, 2.0, 0, 1, Vector2(0.5, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -2.0, 0.0, 1, 0]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_4lhq1"]
+min_value = -1.0
+_data = [Vector2(0, -1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[node name="Scepter_1" type="RigidBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0100944, 0)
+physics_material_override = SubResource("PhysicsMaterial_a7mi2")
+script = ExtResource("1_1467y")
+
+[node name="AuxScene" parent="." instance=ExtResource("1_lg3wh")]
+transform = Transform3D(1, 0, 0, 0, 0.772468, -0.635054, 0, 0.635054, 0.772468, -0.0412468, 0.676401, 0.0173948)
+
+[node name="bodyShape" type="CollisionShape3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.999966, 0.00825536, 0, -0.00825536, 0.999966, -0.0412468, 0.676401, 0.0173948)
+shape = SubResource("CylinderShape3D_paju4")
+
+[node name="scepTwinkle" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.08409, 0)
+amount = 13
+lifetime = 0.3
+explosiveness = 0.15
+randomness = 0.15
+lifetime_randomness = 0.15
+fixed_fps = 60
+mesh = SubResource("QuadMesh_du82u")
+emission_shape = 2
+emission_sphere_radius = 0.15
+spread = 180.0
+gravity = Vector3(0, 1.2, 0)
+initial_velocity_max = 2.0
+angular_velocity_max = 2.0
+angular_velocity_curve = SubResource("Curve_b2bg7")
+radial_accel_min = -1.0
+radial_accel_max = 1.0
+radial_accel_curve = SubResource("Curve_rypsf")
+damping_max = 0.3
+damping_curve = SubResource("Curve_iianr")
+angle_min = -60.0
+angle_max = 60.0
+angle_curve = SubResource("Curve_d6l43")
+scale_amount_min = 0.2
+scale_amount_max = 2.0
+scale_amount_curve = SubResource("Curve_x5u0l")
+hue_variation_min = -0.6
+hue_variation_max = 0.6
+hue_variation_curve = SubResource("Curve_4lhq1")
+
+[editable path="AuxScene"]

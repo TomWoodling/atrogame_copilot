@@ -1,0 +1,69 @@
+[gd_scene load_steps=17 format=3 uid="uid://gonbgxtyqvdv"]
+
+[ext_resource type="Script" path="res://scripts/track_manager.gd" id="1_k3daa"]
+[ext_resource type="AudioStream" uid="uid://c8povof5pwu5n" path="res://sound/bgm/start1.wav" id="2_mn7cx"]
+[ext_resource type="AudioStream" uid="uid://34grpgbsj63y" path="res://sound/bgm/continual1.wav" id="3_33u1f"]
+[ext_resource type="AudioStream" uid="uid://blvwpgt63csa7" path="res://sound/bgm/continual2.wav" id="4_6sjhh"]
+[ext_resource type="AudioStream" uid="uid://c4uokjaavibjh" path="res://sound/bgm/continual3.wav" id="5_1rwkj"]
+[ext_resource type="AudioStream" uid="uid://vno274eaiv42" path="res://sound/bgm/continual4.wav" id="6_w5kss"]
+[ext_resource type="AudioStream" uid="uid://bgu26s5vhqytk" path="res://sound/bgm/continual5.wav" id="7_n32d5"]
+[ext_resource type="AudioStream" uid="uid://bc2jnaio8twiu" path="res://sound/bgm/switcher.wav" id="8_lwtpa"]
+[ext_resource type="AudioStream" uid="uid://nax0npfy28b2" path="res://sound/bgm/change_1.wav" id="9_g5ijo"]
+[ext_resource type="AudioStream" uid="uid://dhhy4glmpsjxp" path="res://sound/bgm/change_1_continue.wav" id="10_gjash"]
+[ext_resource type="AudioStream" uid="uid://xuqewcmguovq" path="res://sound/bgm/change_1_more_1.wav" id="11_oxjop"]
+[ext_resource type="AudioStream" uid="uid://b6uumb3xhoq12" path="res://sound/bgm/change_1_more_2.wav" id="12_ykm6l"]
+[ext_resource type="AudioStream" uid="uid://cmli47oqhufhl" path="res://sound/bgm/change_2.wav" id="13_2ifkt"]
+[ext_resource type="AudioStream" uid="uid://cfqsonwfr363v" path="res://sound/bgm/change_2_continue_1.wav" id="14_yi4gb"]
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_msd1q"]
+streams_count = 5
+stream_0/stream = ExtResource("3_33u1f")
+stream_1/stream = ExtResource("4_6sjhh")
+stream_2/stream = ExtResource("5_1rwkj")
+stream_3/stream = ExtResource("6_w5kss")
+stream_4/stream = ExtResource("7_n32d5")
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_iv8oq"]
+streams_count = 3
+stream_0/stream = ExtResource("10_gjash")
+stream_1/stream = ExtResource("11_oxjop")
+stream_2/stream = ExtResource("12_ykm6l")
+
+[node name="trackManager" type="Node"]
+script = ExtResource("1_k3daa")
+
+[node name="start" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_mn7cx")
+volume_db = -27.733
+
+[node name="continual" type="AudioStreamPlayer" parent="."]
+stream = SubResource("AudioStreamRandomizer_msd1q")
+volume_db = -27.037
+
+[node name="switcher" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("8_lwtpa")
+volume_db = -27.171
+
+[node name="change1" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("9_g5ijo")
+volume_db = -27.171
+
+[node name="change1_continual" type="AudioStreamPlayer" parent="."]
+stream = SubResource("AudioStreamRandomizer_iv8oq")
+volume_db = -27.171
+
+[node name="change2" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("13_2ifkt")
+volume_db = -27.171
+
+[node name="change2_continue" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("14_yi4gb")
+volume_db = -27.171
+
+[connection signal="finished" from="start" to="." method="_on_start_finished"]
+[connection signal="finished" from="continual" to="." method="_on_continual_finished"]
+[connection signal="finished" from="switcher" to="." method="_on_switcher_finished"]
+[connection signal="finished" from="change1" to="." method="_on_change_1_finished"]
+[connection signal="finished" from="change1_continual" to="." method="_on_change_1_continual_finished"]
+[connection signal="finished" from="change2" to="." method="_on_change_2_finished"]
+[connection signal="finished" from="change2_continue" to="." method="_on_change_2_continue_finished"]
