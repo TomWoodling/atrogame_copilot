@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CollectionItemData" load_steps=2 format=3 uid="uid://d2vxpjtjafb2r"]
+
+[ext_resource type="Script" path="res://scripts/collection_item_data.gd" id="1_r2uh0"]
+
+[resource]
+script = ExtResource("1_r2uh0")
+id = 5
+category = 0
+label = "Plant"
+description = "Time to lay down some roots"
+icon_path = "res://assets/icons/plant_icon.png"
+model_scene_path = ""
+rarity_tier = 1
+is_default = false
+preview_color = Color(1, 1, 1, 1)

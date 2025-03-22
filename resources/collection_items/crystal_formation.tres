@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CollectionItemData" load_steps=2 format=3 uid="uid://bmfwx0qj8fri1"]
+
+[ext_resource type="Script" path="res://scripts/collection_item_data.gd" id="1_r3edc"]
+
+[resource]
+script = ExtResource("1_r3edc")
+id = 4
+category = 1
+label = "Crystal Formation"
+description = "Quartz going on here then?"
+icon_path = "res://assets/icons/crystal_formation_icon.png"
+model_scene_path = ""
+rarity_tier = 2
+is_default = false
+preview_color = Color(1, 1, 1, 1)

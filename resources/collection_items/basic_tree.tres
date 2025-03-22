@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CollectionItemData" load_steps=2 format=3 uid="uid://dcy3mlmwa32y3"]
+
+[ext_resource type="Script" path="res://scripts/collection_item_data.gd" id="1_cp6ms"]
+
+[resource]
+script = ExtResource("1_cp6ms")
+id = 1
+category = 0
+label = "Tree"
+description = "Tree-mendous work!"
+icon_path = "res://assets/icons/tree_icon.png"
+model_scene_path = ""
+rarity_tier = 1
+is_default = false
+preview_color = Color(1, 1, 1, 1)

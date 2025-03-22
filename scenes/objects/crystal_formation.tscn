@@ -1,30 +1,59 @@
-[gd_scene load_steps=6 format=3 uid="uid://dmwhq64os745m"]
+[gd_scene load_steps=9 format=3 uid="uid://dmwhq64os745m"]
 
 [ext_resource type="Script" path="res://scripts/scannable_object.gd" id="1_m3puf"]
 [ext_resource type="PackedScene" uid="uid://bkvwpuxu4rhcn" path="res://assets/decor/cute_rock2.glb" id="1_t53d5"]
-[ext_resource type="Script" path="res://scripts/collection_item_data.gd" id="2_jcs2c"]
-
-[sub_resource type="Resource" id="Resource_ait6b"]
-script = ExtResource("2_jcs2c")
-id = 4
-category = 2
-label = "Crystal Formation"
-description = "Quartz going on here then?"
-icon_path = "res://assets/icons/crystal_formation_icon.png"
-model_scene_path = ""
-rarity_tier = 2
+[ext_resource type="Resource" uid="uid://bmfwx0qj8fri1" path="res://resources/collection_items/crystal_formation.tres" id="2_vgoyd"]
+[ext_resource type="Texture2D" uid="uid://d1k2653078dyf" path="res://assets/textures/embers.png" id="4_6ajrb"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_rg5lq"]
+radius = 0.63705
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_p07rs"]
+emission_shape = 2
+emission_sphere_radius = 0.6
+spread = 180.0
+gravity = Vector3(0, 0, 0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jkeo4"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("4_6ajrb")
+billboard_mode = 2
+
+[sub_resource type="QuadMesh" id="QuadMesh_kjgbm"]
+material = SubResource("StandardMaterial3D_jkeo4")
+size = Vector2(2, 2)
 
 [node name="crystal_formation" type="StaticBody3D"]
 transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, 0, 0.62763, 0)
 collision_layer = 9
 collision_mask = 0
 script = ExtResource("1_m3puf")
-collection_data = SubResource("Resource_ait6b")
+collection_data = ExtResource("2_vgoyd")
 
 [node name="scannable_object" parent="." instance=ExtResource("1_t53d5")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0254318, 0, -0.150969)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0254318, 0.204256, -0.150969)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.406766, 0)
 shape = SubResource("SphereShape3D_rg5lq")
+
+[node name="ScanHighlight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.724045, 0)
+visible = false
+light_color = Color(0.2, 0.8, 1, 1)
+light_energy = 0.5
+omni_range = 1.5
+
+[node name="ScanIndicator" type="GPUParticles3D" parent="."]
+transform = Transform3D(-0.0286964, 0, 0.298624, 0, 0.3, 0, -0.298624, 0, -0.0286964, 0.0127953, 0.39593, 0.00309723)
+visible = false
+emitting = false
+amount = 16
+one_shot = true
+explosiveness = 0.25
+visibility_aabb = AABB(-1, -1, -1, 2, 2, 2)
+process_material = SubResource("ParticleProcessMaterial_p07rs")
+draw_pass_1 = SubResource("QuadMesh_kjgbm")

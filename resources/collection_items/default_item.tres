@@ -11,3 +11,5 @@ description = "This is the default object to test scanning"
 icon_path = "res://assets/icons/orb_icon.png"
 model_scene_path = ""
 rarity_tier = 1
+is_default = true
+preview_color = Color(1, 1, 1, 1)

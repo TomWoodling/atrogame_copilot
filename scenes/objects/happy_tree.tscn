@@ -20,6 +20,7 @@ cull_mode = 2
 shading_mode = 0
 vertex_color_use_as_albedo = true
 albedo_texture = ExtResource("3_bpny0")
+billboard_mode = 2
 
 [sub_resource type="QuadMesh" id="QuadMesh_xidu5"]
 material = SubResource("StandardMaterial3D_w5ah8")

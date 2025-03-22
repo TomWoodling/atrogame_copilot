@@ -47,9 +47,9 @@ func add_collected_item(collection_data: Dictionary) -> void:
 	# Convert category_enum (int) to category string
 	var category = ""
 	match category_enum:
-		0: category = "EXOBIOLOGY"
-		1: category = "EXOBOTANY" 
-		2: category = "EXOGEOLOGY"
+		0: category = "EXOBOTANY"
+		1: category = "EXOGEOLOGY" 
+		2: category = "EXOBIOLOGY"
 		3: category = "ARTIFACTS"
 	
 	if not collections.has(category) or str(item_id).is_empty():

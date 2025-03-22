@@ -2,9 +2,12 @@ extends Node3D
 
 signal stage_created(stage: Node3D, encounter_type: StringName)
 
+# Add Scannable Selector
+@onready var scannable_selector: ScannableSelector = ScannableSelector.new()
+
 # Terrain Generation Constants
 const CHUNK_SIZE: int = 100
-const TERRAIN_HEIGHT_RANGE: Vector2 = Vector2(-2.0, 2.5)
+const TERRAIN_HEIGHT_RANGE: Vector2 = Vector2(-4.0, 4.5)
 const NOISE_PARAMS = {
 	"frequency": 0.005,
 	"terrain_scale": 10.0,
@@ -15,7 +18,7 @@ const STAGES_PER_CHUNK = {
 	"min": 1,
 	"max": 3,
 	"min_spacing": 20.0,
-	"height_offset": 0.0  # Explicit height offset for better accessibility
+	"height_offset": 1.0  # Explicit height offset for better accessibility
 }
 # Encounter type weights and configurations
 # Modify the ENCOUNTER_TYPES constant to reflect our current needs
@@ -40,7 +43,7 @@ const SCANNABLE_SPAWN_CONFIG = {
 		"max": 4
 	},
 	"min_spacing": 15.0,  # Minimum distance between scannable objects
-	"height_offset": 0.0   # How far above terrain to spawn
+	"height_offset": 0.1   # How far above terrain to spawn
 }
 
 # Internal state
@@ -57,9 +60,16 @@ func _ready() -> void:
 	if not encounter_stage:
 		push_error("WorldGenerator: Failed to load encounter_stage scene. Check the resource path.")
 		return
+	
+	# Initialize the scannable selector
+	add_child(scannable_selector)
+	
 	setup_noise()
 	await get_tree().process_frame
 	initialize_world()
+
+func get_terrain_height_range() -> Vector2:
+	return TERRAIN_HEIGHT_RANGE
 
 func _physics_process(_delta: float) -> void:
 	if not player:
@@ -255,15 +265,14 @@ func spawn_scannable_objects(chunk: Node3D, chunk_coords: Vector2i) -> void:
 			)
 			
 			# Set Y position based on terrain height
-			pos.y = get_height_at_point(world_pos) + SCANNABLE_SPAWN_CONFIG.height_offset
+			var terrain_height = get_height_at_point(world_pos)
+			pos.y = terrain_height + SCANNABLE_SPAWN_CONFIG.height_offset
 			
-			var object := scannable_object.instantiate()
+			# Get appropriate scannable for this location
+			var object_scene = scannable_selector.get_scannable_for_location(world_pos, terrain_height)
+			var object = object_scene.instantiate()
+			
 			object.position = pos
-			
-			# Optional: Set random name/description from a pool if desired
-			# object.object_name = get_random_object_name()
-			# object.description = get_random_description()
-			
 			chunk.add_child(object)
 			placed_positions.append(pos)
 		

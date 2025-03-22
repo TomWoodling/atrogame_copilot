@@ -1,7 +1,7 @@
 extends StaticBody3D
 
 const DEFAULT_NPC = preload("res://scenes/default_npc.tscn")
-const DEFAULT_COLLECTABLE = preload("res://scenes/default_collectable.tscn")
+const DEFAULT_COLLECTABLE = preload("res://scenes/objects/default_collectable.tscn")
 
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D

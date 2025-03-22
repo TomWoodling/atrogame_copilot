@@ -6,18 +6,20 @@ class_name ScannableObject
 
 @onready var scan_highlight: OmniLight3D = $ScanHighlight
 @onready var scan_indicator: GPUParticles3D = $ScanIndicator
-@export var is_default: bool
+@onready var object_mesh: Node3D = $scannable_object
+
 
 
 var has_been_scanned: bool = false
 var in_range: bool = false
 
 func _ready() -> void:
+	object_mesh.global_rotation.y = randi() % 360
 	if not collection_data:
 		push_error("ScannableObject requires CollectionItemData resource")
 		return
 	
-	if is_default == true:
+	if collection_data.is_default == true:
 		if $MeshInstance3D.get_surface_override_material(0) == null:
 			var default_mat = StandardMaterial3D.new()
 			default_mat.albedo_color = Color(0.7, 0.7, 0.8)

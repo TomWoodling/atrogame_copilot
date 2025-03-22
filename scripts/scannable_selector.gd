@@ -2,104 +2,154 @@
 extends Node
 class_name ScannableSelector
 
-# Define biome types or terrain features that affect what can spawn
-enum BiomeType {FOREST, DESERT, MOUNTAIN, PLAINS}
+# Category enum for readability
+enum Category { EXOBOTANY, EXOGEOLOGY, EXOBIOLOGY, ARTIFACTS }
 
-# Scannable object registry with their scene paths and spawn rules
-const SCANNABLE_REGISTRY = {
-	"tree": {
-		"scene_path": "res://scenes/objects/basic_tree.tscn",
-		"weight": 0.5,
-		"biome_modifiers": {
-			BiomeType.FOREST: 2.0,  # More likely in forests
-			BiomeType.DESERT: 0.1   # Rare in deserts
-		},
-		"min_elevation": -1.0,
-		"max_elevation": 2.0
-	},
-	"crystal": {
-		"scene_path": "res://scenes/objects/crystal_formation.tscn",
-		"weight": 0.3,
-		"biome_modifiers": {
-			BiomeType.MOUNTAIN: 1.5
-		},
-		"min_elevation": 0.5,  # Only spawns above certain height
-		"max_elevation": 2.5
-	},
-	"artifact": {
-		"scene_path": "res://scenes/objects/alien_artifact.tscn",
-		"weight": 0.1,  # Rare
-		"biome_modifiers": {},  # No biome preference
-		"min_elevation": -2.0,
-		"max_elevation": 2.0
-	}
+# Elevation zones
+enum ElevationZone { LOW, MEDIUM, HIGH }
+
+# Category weights based on elevation zone (LOW, MEDIUM, HIGH)
+const CATEGORY_ELEVATION_WEIGHTS = {
+	Category.EXOBOTANY:  [0.15, 0.45, 0.30],  # uncommon low, abundant mid, common high
+	Category.EXOGEOLOGY: [0.30, 0.15, 0.45],  # common low, uncommon mid, abundant high
+	Category.EXOBIOLOGY: [0.45, 0.30, 0.15],  # abundant low, common mid, uncommon high
+	Category.ARTIFACTS:  [0.10, 0.10, 0.10]   # rare at all elevations
 }
 
-# Cache loaded scenes to avoid repeated loading
+# Rarity tier weights (becomes progressively rarer)
+const RARITY_TIER_WEIGHTS = [0.50, 0.25, 0.15, 0.07, 0.03]  # Tier 1-5
+
+# Cache for loaded scenes
 var _scene_cache = {}
 
+# Mission configuration (optional)
+var _mission_config = null
+
 func _ready() -> void:
-	# Preload all scannable scenes to improve performance
-	for item_id in SCANNABLE_REGISTRY:
-		var scene_path = SCANNABLE_REGISTRY[item_id].scene_path
-		_scene_cache[item_id] = load(scene_path)
+	# Preload all scannable scenes
+	_preload_all_scannables()
+
+# Load all available scannable objects from the objects directory
+func _preload_all_scannables() -> void:
+	var dir = DirAccess.open("res://scenes/objects/")
+	if dir:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		
+		while file_name != "":
+			if file_name.ends_with(".tscn"):
+				var path = "res://scenes/objects/" + file_name
+				var scene = load(path)
+				
+				# Check if it's a scannable object
+				if scene and scene.can_instantiate():
+					var instance = scene.instantiate()
+					if instance is ScannableObject:
+						var collection_data = instance.collection_data
+						if collection_data and not collection_data.is_default:
+							_scene_cache[path] = {
+								"scene": scene,
+								"category": collection_data.category,
+								"tier": collection_data.rarity_tier
+							}
+						instance.queue_free()
+					else:
+						instance.queue_free()
+			
+			file_name = dir.get_next()
+		
+		dir.list_dir_end()
+
+# Set mission configuration (optional)
+func set_mission_config(config: Dictionary) -> void:
+	_mission_config = config
 
 # Get appropriate scannable for a specific location
-func get_scannable_for_location(world_pos: Vector3, terrain_height: float, biome_type: int = BiomeType.PLAINS) -> PackedScene:
-	# Filter by elevation
-	var valid_scannables = []
+func get_scannable_for_location(world_pos: Vector3, terrain_height: float) -> PackedScene:
+	# Determine which scenes are in scope
+	var scannables_in_scope = {}
+	
+	if _mission_config and _mission_config.has("allowed_scannables"):
+		# Use mission-specific scannables
+		for path in _mission_config.allowed_scannables:
+			if _scene_cache.has(path):
+				scannables_in_scope[path] = _scene_cache[path]
+	else:
+		# Use all available scannables
+		scannables_in_scope = _scene_cache
+	
+	# If no valid scannables, return default tree
+	if scannables_in_scope.size() == 0:
+		return load("res://scenes/objects/basic_tree.tscn")
+	
+	# Determine elevation zone based on terrain height
+	var elevation_zone = _get_elevation_zone(terrain_height)
+	
+	# Calculate weights for all scannables in scope
+	var weighted_selection = []
 	var total_weight = 0.0
 	
-	for item_id in SCANNABLE_REGISTRY:
-		var item = SCANNABLE_REGISTRY[item_id]
+	for path in scannables_in_scope:
+		var item = scannables_in_scope[path]
+		var category = item.category
+		var tier = item.tier
 		
-		# Check elevation constraints
-		if terrain_height < item.min_elevation or terrain_height > item.max_elevation:
-			continue
-			
-		# Calculate final weight with biome modifiers
-		var final_weight = item.weight
-		if item.biome_modifiers.has(biome_type):
-			final_weight *= item.biome_modifiers[biome_type]
-			
+		# Calculate weight based on category and elevation
+		var category_weight = CATEGORY_ELEVATION_WEIGHTS[category][elevation_zone]
+		
+		# Calculate weight based on rarity tier
+		var tier_weight = RARITY_TIER_WEIGHTS[tier - 1] if tier <= RARITY_TIER_WEIGHTS.size() else 0.01
+		
+		# Combined weight (multiply for proper distribution)
+		var final_weight = category_weight * tier_weight
+		
+		# Apply pseudorandom variation to ensure less predictable spawning
+		# but maintain overall distribution pattern
+		var variation = randf_range(0.8, 1.2)  # ±20% variation
+		final_weight *= variation
+		
 		if final_weight > 0:
-			valid_scannables.append({
-				"id": item_id,
+			weighted_selection.append({
+				"path": path,
+				"scene": item.scene,
 				"weight": final_weight
 			})
 			total_weight += final_weight
 	
-	# If no valid scannables, return default tree
-	if valid_scannables.size() == 0:
-		return _scene_cache.get("tree", load("res://scenes/objects/basic_tree.tscn"))
+	# If even after weighting nothing is valid, return default
+	if weighted_selection.size() == 0 or total_weight <= 0:
+		return load("res://scenes/objects/basic_tree.tscn")
 	
 	# Select random scannable based on weights
 	var roll = randf() * total_weight
 	var current_weight = 0.0
 	
-	for scannable in valid_scannables:
-		current_weight += scannable.weight
+	for selection in weighted_selection:
+		current_weight += selection.weight
 		if roll <= current_weight:
-			return _scene_cache[scannable.id]
+			return selection.scene
 	
 	# Fallback to first valid scannable
-	return _scene_cache[valid_scannables[0].id]
+	return weighted_selection[0].scene
 
-# Get biome type based on terrain data
-func determine_biome_type(terrain_data: Dictionary) -> int:
-	# This is where you'd implement biome determination based on:
-	# - Elevation/height
-	# - Noise values
-	# - Location in the world
-	# - Temperature/moisture (if you have those systems)
+# Determine elevation zone based on terrain height
+func _get_elevation_zone(height: float) -> int:
+	# Get terrain height range from WorldGenerator
+	var world_gen = get_node_or_null("/root/WorldGenerator")
+	var height_range = Vector2(-4.0, 4.5)  # Default from your script
 	
-	# Simple example based on height:
-	var height = terrain_data.get("height", 0.0)
-	if height > 1.5:
-		return BiomeType.MOUNTAIN
-	elif height < -0.5:
-		return BiomeType.DESERT
-	elif height > 0.0 and height < 1.0:
-		return BiomeType.FOREST
+	if world_gen and world_gen.has_method("get_terrain_height_range"):
+		height_range = world_gen.get_terrain_height_range()
+	
+	# Calculate zone thresholds
+	var range_size = height_range.y - height_range.x
+	var low_threshold = height_range.x + (range_size * 0.33)
+	var high_threshold = height_range.x + (range_size * 0.66)
+	
+	# Determine zone
+	if height < low_threshold:
+		return ElevationZone.LOW
+	elif height > high_threshold:
+		return ElevationZone.HIGH
 	else:
-		return BiomeType.PLAINS
+		return ElevationZone.MEDIUM

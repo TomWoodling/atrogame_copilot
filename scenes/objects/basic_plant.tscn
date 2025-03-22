@@ -1,0 +1,59 @@
+[gd_scene load_steps=9 format=3 uid="uid://ck8tahl84trt3"]
+
+[ext_resource type="Script" path="res://scripts/scannable_object.gd" id="1_vw1nt"]
+[ext_resource type="Resource" uid="uid://d2vxpjtjafb2r" path="res://resources/collection_items/basic_plant.tres" id="2_fvxrm"]
+[ext_resource type="PackedScene" uid="uid://ckw1yajxjobl" path="res://assets/decor/cute_plant1.glb" id="3_cxshi"]
+[ext_resource type="Texture2D" uid="uid://d1k2653078dyf" path="res://assets/textures/embers.png" id="4_0oq8v"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_dxv5j"]
+height = 0.944531
+radius = 0.578913
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ssyuc"]
+emission_shape = 2
+emission_sphere_radius = 0.6
+spread = 180.0
+gravity = Vector3(0, 0, 0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ah31m"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("4_0oq8v")
+billboard_mode = 2
+
+[sub_resource type="QuadMesh" id="QuadMesh_mtg37"]
+material = SubResource("StandardMaterial3D_ah31m")
+size = Vector2(2, 2)
+
+[node name="basic_plant" type="StaticBody3D"]
+collision_layer = 9
+collision_mask = 0
+script = ExtResource("1_vw1nt")
+collection_data = ExtResource("2_fvxrm")
+
+[node name="scannable_object" parent="." instance=ExtResource("3_cxshi")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -0.00208044, 0.749416, 0.103231)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.639877, 0)
+shape = SubResource("CylinderShape3D_dxv5j")
+
+[node name="ScanHighlight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.724045, 0)
+visible = false
+light_color = Color(0.2, 0.8, 1, 1)
+light_energy = 0.5
+omni_range = 1.5
+
+[node name="ScanIndicator" type="GPUParticles3D" parent="."]
+transform = Transform3D(-0.0956547, 0, 0.995415, 0, 1, 0, -0.995415, 0, -0.0956547, 0.0127953, 0.792476, 0.00309723)
+visible = false
+emitting = false
+amount = 16
+one_shot = true
+explosiveness = 0.25
+visibility_aabb = AABB(-1, -1, -1, 2, 2, 2)
+process_material = SubResource("ParticleProcessMaterial_ssyuc")
+draw_pass_1 = SubResource("QuadMesh_mtg37")
