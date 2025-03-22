@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CollectionItemData" load_steps=2 format=3 uid="uid://odyxsla52b8f"]
+
+[ext_resource type="Script" path="res://scripts/collection_item_data.gd" id="1_ri56x"]
+
+[resource]
+script = ExtResource("1_ri56x")
+id = 8
+category = 2
+label = "Billy the GOAT"
+description = "Don't tell him he's really a Scan-telope!"
+icon_path = "res://assets/icons/billy_the_goat_icon.png"
+model_scene_path = ""
+rarity_tier = 2
+is_default = false
+preview_color = Color(1, 1, 1, 1)

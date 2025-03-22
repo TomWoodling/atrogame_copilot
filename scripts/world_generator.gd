@@ -18,7 +18,7 @@ const STAGES_PER_CHUNK = {
 	"min": 1,
 	"max": 3,
 	"min_spacing": 20.0,
-	"height_offset": 1.0  # Explicit height offset for better accessibility
+	"height_offset": 0.3  # Explicit height offset for better accessibility
 }
 # Encounter type weights and configurations
 # Modify the ENCOUNTER_TYPES constant to reflect our current needs
@@ -203,13 +203,14 @@ func generate_stages(chunk: Node3D, chunk_coords: Vector2i) -> void:
 	var potential_positions := []
 	
 	for x in range(grid_size):
-		for z in range(grid_size):
-			var pos := Vector3(
-				x * grid_steps + randf_range(-grid_steps/4, grid_steps/4),
-				0,
-				z * grid_steps + randf_range(-grid_steps/4, grid_steps/4)
-			)
-			potential_positions.append(pos)
+		for y in range(grid_size):
+			for z in range(grid_size):
+				var pos := Vector3(
+					x * grid_steps + randf_range(-grid_steps/4, grid_steps/4),
+					0.2,
+					z * grid_steps + randf_range(-grid_steps/4, grid_steps/4)
+				)
+				potential_positions.append(pos)
 	
 	# Shuffle the potential positions
 	potential_positions.shuffle()

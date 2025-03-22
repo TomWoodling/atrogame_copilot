@@ -1,0 +1,58 @@
+[gd_scene load_steps=9 format=3 uid="uid://byrhk6718ywic"]
+
+[ext_resource type="Script" path="res://scripts/scannable_object.gd" id="1_4g8qd"]
+[ext_resource type="Resource" uid="uid://bkwrs3x1h6x6w" path="res://resources/collection_items/alien_figurine.tres" id="2_jd0cr"]
+[ext_resource type="PackedScene" uid="uid://d0d8noneno2o8" path="res://assets/decor/figurine.glb" id="3_eu6yu"]
+[ext_resource type="Texture2D" uid="uid://d1k2653078dyf" path="res://assets/textures/embers.png" id="4_gly2u"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_lkhao"]
+size = Vector3(0.949707, 1.06396, 1)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ensth"]
+emission_shape = 2
+emission_sphere_radius = 0.6
+spread = 180.0
+gravity = Vector3(0, 0, 0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jkeo4"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("4_gly2u")
+billboard_mode = 2
+
+[sub_resource type="QuadMesh" id="QuadMesh_ly2pe"]
+material = SubResource("StandardMaterial3D_jkeo4")
+size = Vector2(2, 2)
+
+[node name="alien_figurine" type="StaticBody3D"]
+collision_layer = 9
+collision_mask = 0
+script = ExtResource("1_4g8qd")
+collection_data = ExtResource("2_jd0cr")
+
+[node name="scannable_object" parent="." instance=ExtResource("3_eu6yu")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0.709273, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0251465, 0.71288, 0)
+shape = SubResource("BoxShape3D_lkhao")
+
+[node name="ScanHighlight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.724045, 0)
+visible = false
+light_color = Color(0.2, 0.8, 1, 1)
+light_energy = 0.5
+omni_range = 1.5
+
+[node name="ScanIndicator" type="GPUParticles3D" parent="."]
+transform = Transform3D(-0.0286964, 0, 0.298624, 0, 0.3, 0, -0.298624, 0, -0.0286964, 0.0127953, 0.39593, 0.00309723)
+visible = false
+emitting = false
+amount = 16
+one_shot = true
+explosiveness = 0.25
+visibility_aabb = AABB(-1, -1, -1, 2, 2, 2)
+process_material = SubResource("ParticleProcessMaterial_ensth")
+draw_pass_1 = SubResource("QuadMesh_ly2pe")

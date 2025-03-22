@@ -14,10 +14,12 @@ var has_been_scanned: bool = false
 var in_range: bool = false
 
 func _ready() -> void:
-	object_mesh.global_rotation.y = randi() % 360
 	if not collection_data:
 		push_error("ScannableObject requires CollectionItemData resource")
 		return
+	
+	if collection_data.category != 2:
+		object_mesh.global_rotation.y = randi() % 360
 	
 	if collection_data.is_default == true:
 		if $MeshInstance3D.get_surface_override_material(0) == null:

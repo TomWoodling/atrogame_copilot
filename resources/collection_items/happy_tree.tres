@@ -6,7 +6,7 @@
 script = ExtResource("1_kq4r4")
 id = 2
 category = 0
-label = "Happy Tree"
+label = "Happy Face Tree"
 description = "You'll never get syc-a-more happy trees to scan!"
 icon_path = "res://assets/icons/happy_tree_icon.png"
 model_scene_path = ""

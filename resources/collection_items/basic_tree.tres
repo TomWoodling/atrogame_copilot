@@ -6,8 +6,8 @@
 script = ExtResource("1_cp6ms")
 id = 1
 category = 0
-label = "Tree"
-description = "Tree-mendous work!"
+label = "An Ordinary Tree"
+description = "Tree-mendous work out there!"
 icon_path = "res://assets/icons/tree_icon.png"
 model_scene_path = ""
 rarity_tier = 1

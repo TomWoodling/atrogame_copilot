@@ -1,11 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://bplc3i7yfswfo"]
+[gd_scene load_steps=10 format=3 uid="uid://bplc3i7yfswfo"]
 
 [ext_resource type="Script" path="res://scripts/scannable_object.gd" id="1_eqelu"]
+[ext_resource type="Resource" uid="uid://72f8xmj6nrm0" path="res://resources/collection_items/snakey_jakey.tres" id="2_iqrlg"]
 [ext_resource type="PackedScene" uid="uid://cfy50rk73n5il" path="res://assets/decor/snakey.blend" id="2_ldssi"]
 [ext_resource type="Texture2D" uid="uid://d1k2653078dyf" path="res://assets/textures/embers.png" id="3_3qyhd"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_0yrq1"]
-size = Vector3(1.87793, 1.31335, 2.37903)
+[ext_resource type="PackedScene" uid="uid://r4r81vaccsxv" path="res://scenes/scanimation_tree.tscn" id="4_5hqf4"]
 
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_qqxfw"]
 emission_shape = 2
@@ -13,7 +12,7 @@ emission_sphere_radius = 0.6
 spread = 180.0
 gravity = Vector3(0, 0, 0)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4sdl6"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kq7eg"]
 transparency = 1
 cull_mode = 2
 shading_mode = 0
@@ -22,15 +21,18 @@ albedo_texture = ExtResource("3_3qyhd")
 billboard_mode = 2
 
 [sub_resource type="QuadMesh" id="QuadMesh_2tv47"]
-material = SubResource("StandardMaterial3D_4sdl6")
+material = SubResource("StandardMaterial3D_kq7eg")
 size = Vector2(2, 2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_w3072"]
-size = Vector3(0.815186, 0.481308, 3.7366)
+size = Vector3(0.815186, 1.43734, 3.7366)
 
 [node name="snakey" type="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.620787)
+collision_layer = 9
 collision_mask = 0
 script = ExtResource("1_eqelu")
+collection_data = ExtResource("2_iqrlg")
 
 [node name="scannable_object" parent="." instance=ExtResource("2_ldssi")]
 transform = Transform3D(0.0128633, -0.0271023, 0, 0.0271023, 0.0128633, 0, 0, 0, 0.03, -0.0692892, 0, -0.0700285)
@@ -61,35 +63,28 @@ bones/15/rotation = Quaternion(0.0530754, 0.123534, 0.0171418, 0.990772)
 bones/15/scale = Vector3(1, 1, 1)
 bones/16/rotation = Quaternion(-0.0112339, 0.358052, -0.0154949, 0.933506)
 bones/17/rotation = Quaternion(-0.0749299, -0.717441, -0.034799, 0.691703)
-bones/17/scale = Vector3(1, 1, 1)
-bones/18/rotation = Quaternion(-0.0544906, -0.307079, 0.0495102, 0.948832)
+bones/18/rotation = Quaternion(-0.0544148, -0.308124, 0.0496957, 0.948488)
 bones/18/scale = Vector3(1, 1, 1)
-bones/19/rotation = Quaternion(0.16771, 0.0258561, 0.219044, 0.960846)
+bones/19/rotation = Quaternion(0.170231, 0.026196, 0.219485, 0.960292)
 bones/19/scale = Vector3(1, 1, 1)
-bones/20/rotation = Quaternion(0.198281, 0.16253, 0.231901, 0.938345)
-bones/21/rotation = Quaternion(0.128713, 0.150725, 0.214106, 0.95649)
+bones/20/rotation = Quaternion(0.204169, 0.16164, 0.235002, 0.936462)
+bones/21/rotation = Quaternion(0.129545, 0.151031, 0.213076, 0.95656)
 bones/21/scale = Vector3(1, 1, 1)
-bones/22/rotation = Quaternion(0.0775423, 0.00245336, 0.2264, 0.97094)
-bones/23/rotation = Quaternion(0.00850898, -0.0130564, -0.100935, 0.994771)
-bones/24/rotation = Quaternion(0.000154503, -0.00239544, -0.121381, 0.992603)
+bones/22/rotation = Quaternion(0.101545, 0.00582692, 0.218504, 0.970521)
+bones/23/rotation = Quaternion(0.0360036, -0.0176408, -0.110782, 0.993036)
+bones/24/rotation = Quaternion(0.0334747, -0.00406087, -0.142315, 0.989247)
 bones/25/position = Vector3(7.08492e-06, 7.53354, -2.46646e-06)
-bones/25/rotation = Quaternion(-0.0557721, 0.0393932, -0.148127, 0.986608)
+bones/25/rotation = Quaternion(0.000267628, 0.0229035, -0.149875, 0.98844)
 bones/26/position = Vector3(-1.11014e-05, 4.51638, 4.62858e-07)
-bones/26/rotation = Quaternion(-0.0401665, 0.0113048, -0.160388, 0.986172)
-bones/27/rotation = Quaternion(-0.00845212, 0.130922, -0.131916, 0.982541)
-bones/28/rotation = Quaternion(0.0323286, 0.0144183, -0.197199, 0.979724)
-bones/29/rotation = Quaternion(0.0438397, 0.0670059, -0.251006, 0.964668)
+bones/26/rotation = Quaternion(0.0209323, -0.013222, -0.156708, 0.987335)
+bones/27/rotation = Quaternion(0.11109, 0.101747, -0.117805, 0.981544)
+bones/28/rotation = Quaternion(0.193272, -0.048716, -0.102722, 0.974536)
+bones/29/rotation = Quaternion(0.216162, -0.0460117, -0.181131, 0.958305)
 bones/30/position = Vector3(3.16501e-05, 6.07999, 3.51663e-06)
-bones/30/rotation = Quaternion(0.0464243, -0.00411146, -0.158601, 0.986242)
+bones/30/rotation = Quaternion(0.0925598, -0.0126108, -0.148142, 0.984544)
 bones/31/position = Vector3(-1.3778e-05, 3.04, -1.68383e-06)
 
-[node name="Area3D" type="Area3D" parent="."]
-collision_layer = 8
-collision_mask = 0
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.438965, 0.617859, 0.689514)
-shape = SubResource("BoxShape3D_0yrq1")
+[node name="ScanimationTree" parent="scannable_object" instance=ExtResource("4_5hqf4")]
 
 [node name="ScanHighlight" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.724045, 0)
@@ -100,6 +95,7 @@ omni_range = 1.5
 
 [node name="ScanIndicator" type="GPUParticles3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.903253, 0)
+visible = false
 emitting = false
 amount = 16
 one_shot = true
@@ -109,7 +105,8 @@ process_material = SubResource("ParticleProcessMaterial_qqxfw")
 draw_pass_1 = SubResource("QuadMesh_2tv47")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.50647, 0.223228, 0.305649)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.50647, 0.701246, 0.305649)
 shape = SubResource("BoxShape3D_w3072")
 
 [editable path="scannable_object"]
+[editable path="scannable_object/ScanimationTree"]

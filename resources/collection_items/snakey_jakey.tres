@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CollectionItemData" load_steps=2 format=3 uid="uid://72f8xmj6nrm0"]
+
+[ext_resource type="Script" path="res://scripts/collection_item_data.gd" id="1_sypm8"]
+
+[resource]
+script = ExtResource("1_sypm8")
+id = 7
+category = 2
+label = "Snakey Jakey"
+description = "Definitely one for the hiss-tory books!"
+icon_path = "res://assets/icons/snakey_jakey_icon.png"
+model_scene_path = ""
+rarity_tier = 1
+is_default = false
+preview_color = Color(1, 1, 1, 1)

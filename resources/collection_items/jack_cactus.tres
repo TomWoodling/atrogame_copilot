@@ -6,7 +6,7 @@
 script = ExtResource("1_u44jy")
 id = 6
 category = 0
-label = "Jacktus"
+label = "Spinified Jacktus"
 description = "Don't mess with this Cactus, Jack!"
 icon_path = "res://assets/icons/cactus_icon.png"
 model_scene_path = ""

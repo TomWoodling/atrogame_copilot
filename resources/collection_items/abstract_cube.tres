@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CollectionItemData" load_steps=2 format=3 uid="uid://c60b3h0mk2w26"]
+
+[ext_resource type="Script" path="res://scripts/collection_item_data.gd" id="1_10y7u"]
+
+[resource]
+script = ExtResource("1_10y7u")
+id = 10
+category = 3
+label = "Abstract Cuboid"
+description = "Some kind of Rubix Goldberg machine?"
+icon_path = "res://assets/icons/cuboid_artifact_icon.png"
+model_scene_path = ""
+rarity_tier = 2
+is_default = false
+preview_color = Color(1, 1, 1, 1)

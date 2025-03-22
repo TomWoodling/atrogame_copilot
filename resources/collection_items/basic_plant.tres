@@ -6,8 +6,8 @@
 script = ExtResource("1_r2uh0")
 id = 5
 category = 0
-label = "Plant"
-description = "Time to lay down some roots"
+label = "Nomadic Plant"
+description = "New planet? Time to lay down some roots!"
 icon_path = "res://assets/icons/plant_icon.png"
 model_scene_path = ""
 rarity_tier = 1

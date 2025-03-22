@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CollectionItemData" load_steps=2 format=3 uid="uid://bkwrs3x1h6x6w"]
+
+[ext_resource type="Script" path="res://scripts/collection_item_data.gd" id="1_8uns6"]
+
+[resource]
+script = ExtResource("1_8uns6")
+id = 9
+category = 3
+label = "'Ancient' Statue"
+description = "Comes with a certificate so you *know* it's legit!"
+icon_path = "res://assets/icons/figurine_icon.png"
+model_scene_path = ""
+rarity_tier = 1
+is_default = false
+preview_color = Color(1, 1, 1, 1)

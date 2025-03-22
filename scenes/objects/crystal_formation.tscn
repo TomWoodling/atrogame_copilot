@@ -14,7 +14,7 @@ emission_sphere_radius = 0.6
 spread = 180.0
 gravity = Vector3(0, 0, 0)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jkeo4"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dthmg"]
 transparency = 1
 cull_mode = 2
 shading_mode = 0
@@ -23,7 +23,7 @@ albedo_texture = ExtResource("4_6ajrb")
 billboard_mode = 2
 
 [sub_resource type="QuadMesh" id="QuadMesh_kjgbm"]
-material = SubResource("StandardMaterial3D_jkeo4")
+material = SubResource("StandardMaterial3D_dthmg")
 size = Vector2(2, 2)
 
 [node name="crystal_formation" type="StaticBody3D"]
