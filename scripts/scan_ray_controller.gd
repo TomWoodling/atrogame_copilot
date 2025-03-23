@@ -17,7 +17,7 @@ func _input(event: InputEvent) -> void:
 		return
 		
 	if event.is_action_pressed("scan"):
-		print("Scan action pressed")
+		#print("Scan action pressed")
 		if is_colliding():
 			var collider = get_collider()
 			if collider is ScannableObject:

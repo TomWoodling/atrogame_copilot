@@ -65,17 +65,17 @@ func _reset_action_cooldown_timer():
 func _on_player_detect_body_entered(body):
 	if body.is_in_group("player"):
 		player_near = true
-		print("nearby")
+		#print("nearby")
 		
 		# Start Move animation if not already in Action
 		if !in_action:
-			print("goto Move")
+			#print("goto Move")
 			animation_state_machine.travel("Move")
 			_reset_move_to_action_timer()
 
 # Trigger the Action animation
 func _do_action():
-	print("doing Action")
+	#print("doing Action")
 	animation_state_machine.travel("Action")
 	in_action = true
 	# Reset timers - they'll be used after Action completes
@@ -100,7 +100,7 @@ func _on_animation_finished(anim_name):
 func _on_player_detect_body_exited(body):
 	if body.is_in_group("player"):
 		player_near = false
-		print("exit zone")
+		#print("exit zone")
 		# If not in Action, return to Idle immediately
 		if !in_action:
 			animation_state_machine.travel("Idle")

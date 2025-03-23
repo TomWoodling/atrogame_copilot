@@ -18,7 +18,7 @@ func _ready() -> void:
 	if not GameManager.is_initialized:
 		GameManager.initialize()
 	GameManager.player = player
-
+	TrackManager.start_track.play()
 	# Create a completely new environment
 	create_environment()
 	

@@ -1,3 +1,4 @@
+# hud_manager.gd (updated)
 extends Node
 
 signal message_shown(message_data: Dictionary)
@@ -8,11 +9,13 @@ signal message_hidden
 @onready var inventory_scene: PackedScene = preload("res://scenes/ui/inventory.tscn")
 @onready var poi_marker_scene: PackedScene = preload("res://scenes/ui/poi_marker.tscn")
 @onready var hud_scene: PackedScene = preload("res://scenes/ui/hud.tscn")
+@onready var dialog_display_scene: PackedScene = preload("res://scenes/ui/dialog_display.tscn")
 
 var message_container: Control
 var scanner_display: Control
 var inventory_ui: Control
 var poi_container: Control
+var dialog_display: DialogDisplay
 var active_pois: Dictionary = {}
 
 func _ready() -> void:
@@ -49,6 +52,24 @@ func show_message(message_data: Dictionary) -> void:
 	message_container.add_child(message)
 	message.display_message(message_data)
 	message_shown.emit(message_data)
+
+# Dialog Display
+func show_dialog(dialog: DialogContainer) -> void:
+	if not dialog_display:
+		dialog_display = dialog_display_scene.instantiate()
+		add_child(dialog_display)
+		
+		# Connect dialog signals
+		dialog_display.dialog_completed.connect(_on_dialog_completed)
+		dialog_display.mood_changed.connect(_on_dialog_mood_changed)
+	
+	dialog_display.start_dialog(dialog)
+
+func _on_dialog_completed() -> void:
+	EncounterManager.on_dialog_completed()
+
+func _on_dialog_mood_changed(mood: String) -> void:
+	EncounterManager.on_dialog_mood_changed(mood)
 
 # Scanner Display
 func _on_scan_started(target: Node3D) -> void:
@@ -138,11 +159,13 @@ func clear_all_pois() -> void:
 func _on_game_state_changed(new_state: GameManager.GameState) -> void:
 	match new_state:
 		GameManager.GameState.PAUSED:
-			# Handle pause state UI changes if needed
-			pass
+			# If dialog is active, hide it during pause
+			if dialog_display and dialog_display.visible:
+				dialog_display.hide()
 		GameManager.GameState.PLAYING:
-			# Handle resume state UI changes if needed
-			pass
+			# Restore dialog if it was active
+			if dialog_display and dialog_display.modulate.a > 0:
+				dialog_display.show()
 
 func _exit_tree() -> void:
 	clear_all_pois()

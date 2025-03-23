@@ -1,7 +1,5 @@
 extends Node3D
 
-signal stage_created(stage: Node3D, encounter_type: StringName)
-
 # Add Scannable Selector
 @onready var scannable_selector: ScannableSelector = ScannableSelector.new()
 
@@ -12,29 +10,6 @@ const NOISE_PARAMS = {
 	"frequency": 0.005,
 	"terrain_scale": 10.0,
 	"detail_scale": 2.0
-}
-
-const STAGES_PER_CHUNK = {
-	"min": 1,
-	"max": 3,
-	"min_spacing": 20.0,
-	"height_offset": 0.3  # Explicit height offset for better accessibility
-}
-# Encounter type weights and configurations
-# Modify the ENCOUNTER_TYPES constant to reflect our current needs
-const ENCOUNTER_TYPES = {
-	"info": { 
-		"weight": 0.4,  # More common as they're tutorial/story elements
-		"min_spacing": 30.0  # Spread info encounters further apart
-	},
-	"npc": { 
-		"weight": 0.3,
-		"min_spacing": 20.0
-	},
-	"collection": { 
-		"weight": 0.3,
-		"min_spacing": 15.0  # Can be closer together
-	}
 }
 
 const SCANNABLE_SPAWN_CONFIG = {
@@ -53,14 +28,9 @@ var generated_chunks: Dictionary = {}
 var current_chunk: Vector2i
 var player: Node3D
 
-@onready var encounter_stage: PackedScene = preload("res://scenes/stages/encounter_stage.tscn")
 @onready var scannable_object: PackedScene = preload("res://scenes/objects/basic_tree.tscn")
 
 func _ready() -> void:
-	if not encounter_stage:
-		push_error("WorldGenerator: Failed to load encounter_stage scene. Check the resource path.")
-		return
-	
 	# Initialize the scannable selector
 	add_child(scannable_selector)
 	
@@ -82,13 +52,13 @@ func _physics_process(_delta: float) -> void:
 func setup_noise() -> void:
 	# Main terrain noise
 	noise = FastNoiseLite.new()
-	noise.noise_type = FastNoiseLite.TYPE_PERLIN  # Fixed: Updated enum name
+	noise.noise_type = FastNoiseLite.TYPE_PERLIN
 	noise.seed = randi()
 	noise.frequency = NOISE_PARAMS.frequency
 	
 	# Detail noise for added variation
 	detail_noise = FastNoiseLite.new()
-	detail_noise.noise_type = FastNoiseLite.TYPE_PERLIN  # Fixed: Updated enum name
+	detail_noise.noise_type = FastNoiseLite.TYPE_PERLIN
 	detail_noise.seed = randi() + 1  # Different seed for variation
 	detail_noise.frequency = NOISE_PARAMS.frequency * 2.0  # Higher frequency for details
 
@@ -124,8 +94,7 @@ func generate_chunk(chunk_coords: Vector2i) -> void:
 	var terrain := generate_terrain_mesh(chunk_coords)
 	if terrain:
 		chunk.add_child(terrain)
-		generate_stages(chunk, chunk_coords)
-		spawn_scannable_objects(chunk, chunk_coords)  # Add this line
+		spawn_scannable_objects(chunk, chunk_coords)
 		generated_chunks[chunk_coords] = chunk
 	else:
 		chunk.queue_free()
@@ -193,47 +162,6 @@ func get_height_at_point(world_pos: Vector3) -> float:
 	
 	return remapped
 
-func generate_stages(chunk: Node3D, chunk_coords: Vector2i) -> void:
-	var num_stages := randi_range(STAGES_PER_CHUNK.min, STAGES_PER_CHUNK.max)
-	var placed_stages: Array[Vector3] = []
-	
-	# Create a grid of potential positions
-	var grid_size := 5
-	var grid_steps := CHUNK_SIZE / grid_size
-	var potential_positions := []
-	
-	for x in range(grid_size):
-		for y in range(grid_size):
-			for z in range(grid_size):
-				var pos := Vector3(
-					x * grid_steps + randf_range(-grid_steps/4, grid_steps/4),
-					0.2,
-					z * grid_steps + randf_range(-grid_steps/4, grid_steps/4)
-				)
-				potential_positions.append(pos)
-	
-	# Shuffle the potential positions
-	potential_positions.shuffle()
-	
-	# Try to place stages at potential positions
-	var stages_placed := 0
-	for pos in potential_positions:
-		if stages_placed >= num_stages:
-			break
-			
-		var encounter_type := select_encounter_type()
-		
-		if is_valid_stage_position(pos, placed_stages):
-			var world_pos :Vector3 = pos + Vector3(chunk_coords.x * CHUNK_SIZE, 0, chunk_coords.y * CHUNK_SIZE)
-			pos.y = get_height_at_point(world_pos)
-			
-			var stage := create_stage(pos, encounter_type)
-			if stage:
-				chunk.add_child(stage)
-				placed_stages.append(pos)
-				stages_placed += 1
-				stage_created.emit(stage, StringName(encounter_type))
-
 func spawn_scannable_objects(chunk: Node3D, chunk_coords: Vector2i) -> void:
 	var num_objects := randi_range(
 		SCANNABLE_SPAWN_CONFIG.per_chunk.min, 
@@ -278,130 +206,6 @@ func spawn_scannable_objects(chunk: Node3D, chunk_coords: Vector2i) -> void:
 			placed_positions.append(pos)
 		
 		attempts += 1
-
-# Modify is_valid_stage_position to use type-specific spacing
-func is_valid_stage_position(pos: Vector3, placed_stages: Array[Vector3]) -> bool:
-	var encounter_type := select_encounter_type()
-	var min_spacing: float = ENCOUNTER_TYPES[encounter_type].get("min_spacing", STAGES_PER_CHUNK.min_spacing)
-	
-	# Check distance from other stages
-	for placed in placed_stages:
-		if pos.distance_to(placed) < min_spacing:
-			return false
-	
-	# Check terrain slope
-	var world_pos := pos + Vector3(current_chunk.x * CHUNK_SIZE, 0, current_chunk.y * CHUNK_SIZE)
-	if !is_terrain_flat_enough(world_pos, 3.0, 0.5):
-		return false
-		
-	return true
-
-# New function to check if terrain is flat enough for a stage
-func is_terrain_flat_enough(center_pos: Vector3, radius: float, max_slope: float) -> bool:
-	var center_height := get_height_at_point(center_pos)
-	var check_points := 8
-	
-	for i in range(check_points):
-		var angle := (2.0 * PI * i) / check_points
-		var check_pos := center_pos + Vector3(cos(angle) * radius, 0, sin(angle) * radius)
-		var height := get_height_at_point(check_pos)
-		
-		# If height difference is too large, terrain is not flat enough
-		if abs(height - center_height) > max_slope:
-			return false
-	
-	return true
-
-func select_encounter_type() -> String:
-	var roll := randf()
-	var cumulative := 0.0
-	
-	for type in ENCOUNTER_TYPES:
-		cumulative += ENCOUNTER_TYPES[type].weight
-		if roll <= cumulative:
-			return type
-	
-	return ENCOUNTER_TYPES.keys()[0]
-
-# Update create_stage function with the new height offset
-func create_stage(posi: Vector3, encounter_type: String) -> Node3D:
-	var stage := encounter_stage.instantiate() as Node3D
-	if not stage:
-		push_error("WorldGenerator: Failed to instantiate encounter_stage scene")
-		return null
-	
-	# Name the stage
-	stage.name = "EncounterStage_%s_%d_%d" % [
-		encounter_type, 
-		int(posi.x), 
-		int(posi.z)
-	]
-	
-	# Calculate base terrain height
-	var terrain_height := get_height_at_point(position)
-	posi.y = terrain_height
-	stage.position = posi
-	
-	# Get surrounding terrain information
-	var surrounding_info := analyze_surrounding_terrain(posi, 3.0)
-	
-	# Use the explicit height offset from constants
-	stage.position.y += STAGES_PER_CHUNK.height_offset
-	
-	# Setup the encounter with type-specific configurations
-	if stage.has_method("setup_encounter"):
-		var config := {
-			"type": encounter_type,
-			"terrain_height": terrain_height,
-			"surrounding_height": surrounding_info.max_height,
-			"avg_height": surrounding_info.avg_height,
-			"slope_direction": surrounding_info.slope_direction
-		}
-		stage.setup_encounter(config)
-	
-	return stage
-
-# New function to analyze surrounding terrain
-func analyze_surrounding_terrain(pos: Vector3, radius: float = 3.0) -> Dictionary:
-	var heights := []
-	var positions := []
-	var steps := 8  # Check 8 points around the position
-	
-	for i in range(steps):
-		var angle := (2.0 * PI * i) / steps
-		var check_pos := pos + Vector3(cos(angle) * radius, 0, sin(angle) * radius)
-		var height := get_height_at_point(check_pos)
-		heights.append(height)
-		positions.append(check_pos)
-	
-	# Calculate average and find max height
-	var sum := 0.0
-	var max_height : float = heights[0]
-	var min_height : float = heights[0]
-	
-	for h in heights:
-		sum += h
-		max_height = max(max_height, h)
-		min_height = min(min_height, h)
-	
-	var avg_height := sum / heights.size()
-	
-	# Determine slope direction (if any)
-	var slope_direction := Vector3.ZERO
-	if max_height - min_height > 0.1:  # If there's a significant slope
-		var highest_idx := heights.find(max_height)
-		var lowest_idx := heights.find(min_height)
-		if highest_idx >= 0 and lowest_idx >= 0:
-			var highest_pos : Vector3 = positions[highest_idx]
-			var lowest_pos : Vector3 = positions[lowest_idx]
-			slope_direction = (highest_pos - lowest_pos).normalized()
-	
-	return {
-		"max_height": max_height,
-		"min_height": min_height,
-		"avg_height": avg_height,
-		"slope_direction": slope_direction
-	}
 
 func check_chunks(player_pos: Vector3) -> void:
 	current_chunk = get_chunk_coords(player_pos)
