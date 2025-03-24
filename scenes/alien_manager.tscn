@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://c4fnplsqu7lrv"]
-
-[ext_resource type="Script" path="res://scripts/alien_manager.gd" id="1_31o31"]
-
-[node name="alienManager" type="Node"]
-script = ExtResource("1_31o31")

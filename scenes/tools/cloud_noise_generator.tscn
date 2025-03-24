@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://dhh2l4f286m1j"]
-
-[ext_resource type="Script" path="res://scripts/cloud_noise.gd" id="1_h56mv"]
-
-[node name="cloud_noise_generator" type="Node"]
-script = ExtResource("1_h56mv")
