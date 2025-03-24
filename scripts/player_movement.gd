@@ -173,8 +173,6 @@ func _get_speed_modifier() -> float:
 	match GameManager.gameplay_state:
 		GameManager.GameplayState.SCANNING:
 			return scanning_speed_mult
-		GameManager.GameplayState.INTERACTING:
-			return interaction_speed_mult
 		GameManager.GameplayState.STUNNED:
 			# Use recovering speed if in stand animation
 			if animation_tree && animation_tree.current_state == animation_tree.AnimState.STAND:
@@ -188,8 +186,6 @@ func _get_rotation_modifier() -> float:
 	match GameManager.gameplay_state:
 		GameManager.GameplayState.SCANNING:
 			return scanning_rotation_mult
-		GameManager.GameplayState.INTERACTING:
-			return interaction_rotation_mult
 		GameManager.GameplayState.STUNNED:
 			return stunned_rotation_mult
 		_:

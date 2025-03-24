@@ -9,6 +9,8 @@ signal collection_updated(category: String, item_id: String, count: int)
 
 enum InventoryTab { MISSIONS, COLLECTIONS, ENCOUNTERS, ACHIEVEMENTS }
 
+var encounter_progress: Dictionary = {}
+
 # Collection categories match scannable object types
 var collections: Dictionary = {
 	"EXOBIOLOGY": {},
@@ -125,3 +127,18 @@ func get_item_data(category: String, item_id: String) -> Dictionary:
 	if not collections.has(category) or not collections[category].has(item_id):
 		return {}
 	return collections[category][item_id]
+
+
+func mark_encounter_completed(encounter_id: String, progress_data: Dictionary = {}) -> void:
+	encounter_progress[encounter_id] = {
+		"completed": true,
+		"timestamp": Time.get_unix_time_from_system(),
+		"data": progress_data
+	}
+	
+	# Trigger event for any systems that need to know
+	emit_signal("collection_updated", "ENCOUNTERS", encounter_id, 1)
+
+# Check if an encounter is completed
+func is_encounter_completed(encounter_id: String) -> bool:
+	return encounter_progress.has(encounter_id) and encounter_progress[encounter_id].completed

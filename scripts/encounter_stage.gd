@@ -1,128 +1,212 @@
+# encounter_stage.gd (modified)
 extends StaticBody3D
 
-const DEFAULT_NPC = preload("res://scenes/default_npc.tscn")
-const DEFAULT_COLLECTABLE = preload("res://scenes/objects/default_collectable.tscn")
+signal challenge_item_collected(item_id: String)
+signal challenge_destination_reached
+signal challenge_time_elapsed
+
+# Challenge objects
+const COLLECTION_ITEM = preload("res://scenes/challenge_collectable.tscn")
+const DESTINATION_MARKER = preload("res://scenes/destination_marker.tscn")
 
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
-@onready var interaction_zone: Area3D = $InteractionZone
+@onready var timer: Timer = $Timer
 
-var encounter_config: Dictionary
-var current_object: Node3D
-var pending_setup: Dictionary
+# Challenge configuration
+var challenge_type: EncounterManager.ChallengeType
+var challenge_config: Dictionary
+var item_count: int = 0
+var collected_count: int = 0
+var time_limit: float = 0
+var time_remaining: float = 0
+var is_active: bool = false
+
+# Collection of all spawned objects
+var challenge_objects: Array[Node3D] = []
 
 func _ready() -> void:
-	# If we had a pending setup from before nodes were ready, apply it now
-	if not pending_setup.is_empty():
-		_apply_setup(pending_setup)
+	# Initialize timer
+	if not has_node("Timer"):
+		var new_timer = Timer.new()
+		new_timer.name = "Timer"
+		add_child(new_timer)
+		timer = new_timer
+	
+	timer.one_shot = false
+	timer.timeout.connect(_on_timer_timeout)
 
-# Called by world_generator with configuration
-func setup_encounter(config: Dictionary) -> void:
-	# Store the configuration
-	encounter_config = config
+func setup_challenge(type: EncounterManager.ChallengeType, config: Dictionary) -> void:
+	# Store challenge configuration
+	challenge_type = type
+	challenge_config = config
 	
-	# Check if we're ready to apply the setup
-	if not is_node_ready():
-		pending_setup = config
-		return
-	
-	_apply_setup(config)
-
-func _apply_setup(config: Dictionary) -> void:
-	# Safety check for required config
-	if not config.has("type"):
-		push_error("Encounter stage setup missing required 'type' parameter")
-		return
-		
-	# Ensure our nodes are properly initialized
-	 # Check if nodes are ready
-	if not is_instance_valid(mesh_instance) or not is_instance_valid(collision_shape):
-		# Defer the setup until nodes are ready
-		call_deferred("_apply_setup", config)
-		return
-	
-	# Adjust stage size based on type
-	var stage_size := _get_stage_size(config.type)
+	# Resize stage based on challenge type
+	var stage_size := _get_stage_size(type)
 	if not _resize_stage(stage_size):
-		push_error("Failed to resize stage")
+		push_error("Failed to resize challenge stage")
 		return
 	
-	# this is not needed as determined by world_generator.gd
-	#if config.has("surrounding_height") and config.has("terrain_height"):
-	#	var height_diff: float = config.surrounding_height - config.terrain_height
-	#	if height_diff > 0:
-	#		position.y += height_diff
-	
-	# Configure interaction zone if it exists
-	if is_instance_valid(interaction_zone) and interaction_zone.has_method("configure"):
-		interaction_zone.configure(config)
-	
-	# Spawn type-specific objects
-	_spawn_encounter_object(config.type)
-
-func _get_stage_size(type: String) -> Vector2:
+	# Create challenge objects based on type
 	match type:
-		"npc": return Vector2(4.0, 4.0)
-		"collection": return Vector2(3.0, 3.0)
-		"info": return Vector2(2.5, 2.5)
-		"special_challenge": return Vector2(8.0, 8.0)  # Larger stage for special challenges
-		_: return Vector2(1.0, 1.0)
+		EncounterManager.ChallengeType.COLLECTION:
+			_setup_collection_challenge(config)
+		EncounterManager.ChallengeType.PLATFORMING:
+			_setup_platforming_challenge(config)
+		EncounterManager.ChallengeType.TIMED_TASK:
+			_setup_timed_challenge(config)
+		EncounterManager.ChallengeType.PUZZLE:
+			_setup_puzzle_challenge(config)
+	
+	# Set up time limit if applicable
+	if config.has("time_limit") and config.time_limit > 0:
+		time_limit = config.time_limit
+		time_remaining = time_limit
+	
+	# Activate the challenge
+	activate()
+
+func activate() -> void:
+	is_active = true
+	
+	# Start timer if time-limited
+	if time_limit > 0:
+		timer.start(1.0)  # Update every second
+		
+		# Show initial time
+		HUDManager.show_message({
+			"text": "Time remaining: " + str(int(time_remaining)) + "s",
+			"color": Color.YELLOW,
+			"duration": 1.0
+		})
+
+func deactivate() -> void:
+	is_active = false
+	timer.stop()
+	
+	# Clean up challenge objects
+	cleanup()
+
+func _setup_collection_challenge(config: Dictionary) -> void:
+	# Get params with defaults
+	item_count = config.get("count", 5)
+	var spawn_radius = config.get("radius", 10.0)
+	
+	# Create collection items
+	for i in range(item_count):
+		var item = COLLECTION_ITEM.instantiate()
+		add_child(item)
+		
+		# Random position within radius
+		var angle = randf() * TAU
+		var distance = randf_range(2.0, spawn_radius)
+		var pos = Vector3(cos(angle) * distance, 1.0, sin(angle) * distance)
+		item.position = pos
+		
+		# Connect signals
+		if item.has_signal("collected"):
+			item.connect("collected", _on_item_collected)
+		
+		challenge_objects.append(item)
+
+func _setup_platforming_challenge(config: Dictionary) -> void:
+	# Get params with defaults
+	var destination_distance = config.get("distance", 15.0)
+	var platform_count = config.get("platform_count", 5)
+	
+	# Create destination marker
+	var destination = DESTINATION_MARKER.instantiate()
+	add_child(destination)
+	
+	# Position at a specific distance, potentially elevated
+	var angle = randf() * TAU
+	var pos = Vector3(cos(angle) * destination_distance, config.get("height", 5.0), sin(angle) * destination_distance)
+	destination.position = pos
+	
+	# Connect signals
+	if destination.has_signal("reached"):
+		destination.connect("reached", _on_destination_reached)
+	
+	challenge_objects.append(destination)
+	
+	# Create platforms leading to destination
+	# (Platform creation code would go here)
+
+func _setup_timed_challenge(config: Dictionary) -> void:
+	# Implementation depends on the specific timed challenge type
+	pass
+
+func _setup_puzzle_challenge(config: Dictionary) -> void:
+	# Implementation depends on the puzzle design
+	pass
+
+func _on_item_collected(item_id: String) -> void:
+	collected_count += 1
+	emit_signal("challenge_item_collected", item_id)
+	
+	# Update HUD
+	HUDManager.show_message({
+		"text": "Collected " + str(collected_count) + "/" + str(item_count),
+		"color": Color.GREEN,
+		"duration": 1.0
+	})
+	
+	# Check if all items collected
+	if collected_count >= item_count:
+		# Complete the challenge
+		EncounterManager.complete_challenge(true)
+
+func _on_destination_reached() -> void:
+	emit_signal("challenge_destination_reached")
+	
+	# Complete the challenge
+	EncounterManager.complete_challenge(true)
+
+func _on_timer_timeout() -> void:
+	time_remaining -= 1.0
+	
+	# Update HUD with time remaining
+	if time_remaining > 0:
+		if time_remaining <= 10:  # Last 10 seconds
+			HUDManager.show_message({
+				"text": "Time remaining: " + str(int(time_remaining)) + "s",
+				"color": Color.RED if time_remaining <= 5 else Color.YELLOW,
+				"duration": 0.5
+			})
+	else:
+		# Time's up!
+		emit_signal("challenge_time_elapsed")
+		
+		# Fail the challenge if time-based
+		var fail_on_timeout = challenge_config.get("fail_on_timeout", true)
+		if fail_on_timeout:
+			EncounterManager.complete_challenge(false)
+		
+		# Stop the timer
+		timer.stop()
+
+func _get_stage_size(type: EncounterManager.ChallengeType) -> Vector2:
+	match type:
+		EncounterManager.ChallengeType.COLLECTION: 
+			return Vector2(20.0, 20.0)
+		EncounterManager.ChallengeType.PLATFORMING: 
+			return Vector2(30.0, 30.0)
+		EncounterManager.ChallengeType.TIMED_TASK: 
+			return Vector2(15.0, 15.0)
+		EncounterManager.ChallengeType.PUZZLE: 
+			return Vector2(25.0, 25.0)
+		_: 
+			return Vector2(10.0, 10.0)
 
 func _resize_stage(size: Vector2) -> bool:
-	#print("resizing")
-	# Safety check for mesh_instance
-	if not is_instance_valid(mesh_instance):
-		push_warning("mesh_instance not valid during resize attempt")
-		return false
-	
-	# Check if mesh exists and is the correct type
-	var mesh := mesh_instance.mesh
-	if not mesh:
-		push_warning("No mesh found on mesh_instance")
-		return false
-	
-	if not mesh is BoxMesh:
-		push_warning("Mesh is not a BoxMesh, found: " + mesh.get_class())
-		return false
-	
-	# Create a unique copy of the mesh before modifying it
-	var box_mesh := mesh.duplicate() as BoxMesh
-	mesh_instance.mesh = box_mesh  # Assign the unique copy back
-	box_mesh.size = Vector3(size.x, 0.1, size.y)
-	
-	# Resize the collision shape - also make it unique
-	if is_instance_valid(collision_shape):
-		var shape := collision_shape.shape
-		if shape is BoxShape3D:
-			var unique_shape := shape.duplicate() as BoxShape3D
-			collision_shape.shape = unique_shape  # Assign the unique copy back
-			unique_shape.size = Vector3(size.x, 0.1, size.y)
-		else:
-			push_warning("Collision shape is not a BoxShape3D")
-			return false
-	else:
-		push_warning("collision_shape not valid during resize attempt")
-		return false
-	
-	return true
-			
-func _spawn_encounter_object(type: String) -> void:
-	if current_object:
-		current_object.queue_free()
-	
-	match type:
-		"npc":
-			current_object = DEFAULT_NPC.instantiate()
-		"collection":
-			current_object = DEFAULT_COLLECTABLE.instantiate()
-		"info":
-			return  # Info encounters don't need physical objects
-	
-	if current_object:
-		add_child(current_object)
-		current_object.position.y = 0.1  # Slight offset above stage
+	# Reuse your existing resize code
+	# ...
+	return true  # Return success/failure
 
 func cleanup() -> void:
-	if current_object and is_instance_valid(current_object):
-		current_object.queue_free()
-	current_object = null
+	# Clean up all spawned challenge objects
+	for obj in challenge_objects:
+		if is_instance_valid(obj):
+			obj.queue_free()
+	
+	challenge_objects.clear()

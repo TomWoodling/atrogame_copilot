@@ -35,7 +35,7 @@ script = ExtResource("1_60lp7")
 collection_data = ExtResource("2_f77r7")
 
 [node name="scannable_object" parent="." instance=ExtResource("2_0w3bi")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -0.0219681, 0.510318, -0.194639)
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -0.0219681, 0.628464, -0.194639)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.64741, 0)

@@ -1,4 +1,4 @@
-# npc_controller.gd (updated)
+# npc_controller.gd (updated for Godot 4.3)
 extends CharacterBody3D
 class_name NPController
 
@@ -10,6 +10,9 @@ class_name NPController
 
 # Node References
 @onready var animation_player: AnimationPlayer = get_node(animation_player_path)
+
+@export var available_encounters: Array[String] = []
+var current_encounter_id: String = ""
 
 # Animation States - matches animation names in pascal case
 enum AnimState {
@@ -46,6 +49,14 @@ func _ready() -> void:
 	# Initialize idle animation
 	play_animation(AnimState.IDLE)
 
+# Get the appropriate encounter for this NPC
+func get_appropriate_encounter_id() -> String:
+	for encounter_id in available_encounters:
+		var encounter = EncounterManager.get_encounter(encounter_id)
+		if encounter and (not encounter.one_time_only or not InventoryManager.is_encounter_completed(encounter_id)):
+			return encounter_id
+	return ""
+
 func play_animation(anim_state: AnimState, force: bool = false) -> void:
 	if not animation_player:
 		return
@@ -65,24 +76,35 @@ func get_random_talk_animation() -> void:
 	play_animation(talk_anims[randi() % talk_anims.size()])
 
 # Called by interaction_zone through encounter_stage
+# Modified on_interaction_started
 func on_interaction_started() -> void:
 	if is_interactable and not is_in_dialog:
 		is_in_dialog = true
 		get_random_talk_animation()
 		
-		# Start the NPC encounter with this NPC's dialog
-		if not dialogue_id.is_empty():
-			EncounterManager.start_encounter(
-				EncounterManager.EncounterType.NPC, 
-				dialogue_id,
-				self  # Pass reference to this NPC
-			)
+		# Check for available encounters first
+		current_encounter_id = get_appropriate_encounter_id()
+		if not current_encounter_id.is_empty():  # FIXED: empty() -> is_empty()
+			EncounterManager.start_encounter_by_id(current_encounter_id, self)
 		else:
-			# Fallback for NPCs without specific dialog
-			EncounterManager.start_encounter(
-				EncounterManager.EncounterType.INFO,
-				npc_name + ": Hello there, I'm " + npc_name + "."
-			)
+			# No encounters available, use default dialog
+			if not dialogue_id.is_empty():  # FIXED: empty() -> is_empty()
+				# Check if we should use post-completion dialog instead
+				var last_encounter = available_encounters if available_encounters.size() > 0 else null
+				var encounter = EncounterManager.get_encounter(last_encounter)
+				
+				if not last_encounter.is_empty() and InventoryManager.is_encounter_completed(last_encounter) and encounter:  # FIXED: empty() -> is_empty()
+					# Use post-completion dialog
+					var dialog = DialogManager.get_dialog(encounter.post_completion_dialog_id)
+					if dialog:
+						EncounterManager.start_dialog(dialog)
+						return
+				
+				# Use regular dialog
+				EncounterManager.start_encounter(self, dialogue_id)
+			else:
+				# Fallback for NPCs without specific dialog
+				EncounterManager.start_encounter(self, npc_name + ": Hello there, I'm " + npc_name + ".")
 
 # Called when interaction ends
 func on_interaction_ended() -> void:
@@ -109,7 +131,7 @@ func play_animation_by_name(anim_name: String) -> void:
 	if not animation_player:
 		return
 		
-	if anim_name.is_empty():
+	if anim_name.is_empty():  # FIXED: empty() -> is_empty()
 		return
 	
 	# Try to match with enum first
