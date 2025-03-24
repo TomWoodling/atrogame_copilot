@@ -1,0 +1,188 @@
+[gd_scene load_steps=14 format=3 uid="uid://1ti7drtave4b"]
+
+[ext_resource type="Script" path="res://scripts/destination_marker.gd" id="1_d1e2f"]
+[ext_resource type="Texture2D" uid="uid://d1k2653078dyf" path="res://assets/textures/embers.png" id="2_d2e3f"]
+[ext_resource type="AudioStream" uid="uid://4yl75ryhqijy" path="res://assets/audio/marker_reached.wav" id="3_g3h4i"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_col1"]
+height = 0.5
+radius = 1.5
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_col2"]
+radius = 2.0
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_marker1"]
+emission_shape = 1
+emission_sphere_radius = 2.0
+direction = Vector3(0, 1, 0)
+spread = 30.0
+initial_velocity_min = 0.5
+initial_velocity_max = 1.0
+gravity = Vector3(0, 0.2, 0)
+scale_min = 0.05
+scale_max = 0.15
+color = Color(0.2, 0.8, 0.2, 0.7)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_marker1"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("2_d2e3f")
+
+[sub_resource type="QuadMesh" id="QuadMesh_marker1"]
+material = SubResource("StandardMaterial3D_marker1")
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_marker1"]
+top_radius = 1.5
+bottom_radius = 1.5
+height = 0.2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_marker2"]
+transparency = 1
+albedo_color = Color(0.14, 0.56, 0.14, 0.5)
+emission_enabled = true
+emission = Color(0.2, 0.8, 0.2, 1)
+emission_energy_multiplier = 0.5
+
+[sub_resource type="Animation" id="Animation_pulse"]
+resource_name = "pulse"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MarkerLight:light_energy")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [1.0, 1.5, 1.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MarkerParticles:process_material:emission_sphere_radius")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [2.0, 2.2, 2.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("MarkerMesh:material_override:emission_energy_multiplier")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.5, 0.8, 0.5]
+}
+
+[sub_resource type="Animation" id="Animation_reached"]
+resource_name = "reached"
+length = 2.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MarkerLight:light_energy")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.3, 2),
+"transitions": PackedFloat32Array(0.5, 2, 1),
+"update": 0,
+"values": [1.0, 3.0, 0.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MarkerParticles:amount")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [64, 128]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("MarkerParticles:emitting")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("MarkerMesh:material_override:emission_energy_multiplier")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.3, 2),
+"transitions": PackedFloat32Array(0.5, 2, 1),
+"update": 0,
+"values": [0.5, 1.5, 0.0]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_marker"]
+_data = {
+"pulse": SubResource("Animation_pulse"),
+"reached": SubResource("Animation_reached")
+}
+
+[node name="DestinationMarker" type="StaticBody3D" groups=["markers"]]
+script = ExtResource("1_d1e2f")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+shape = SubResource("CylinderShape3D_col1")
+
+[node name="MarkerArea" type="Area3D" parent="."]
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MarkerArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CylinderShape3D_col2")
+
+[node name="MarkerParticles" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+amount = 64
+lifetime = 2.0
+process_material = SubResource("ParticleProcessMaterial_marker1")
+draw_pass_1 = SubResource("QuadMesh_marker1")
+
+[node name="MarkerLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+light_color = Color(0.2, 0.8, 0.2, 1)
+omni_range = 3.0
+
+[node name="MarkerMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_marker1")
+surface_material_override/0 = SubResource("StandardMaterial3D_marker2")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_marker")
+}
+autoplay = "pulse"
+
+[node name="AudioPlayer" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("3_g3h4i")
+volume_db = -18.0
+unit_size = 3.0
+max_db = 0.0
