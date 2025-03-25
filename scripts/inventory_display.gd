@@ -33,16 +33,13 @@ func _ready() -> void:
 	hide()
 	backdrop.color = Color(0.1, 0.1, 0.15, 0.85)
 	_setup_tabs()
+	
+	# Connect to inventory signals
+	InventoryManager.inventory_opened.connect(show_inventory)
+	InventoryManager.inventory_closed.connect(hide_inventory)
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("inventory"):
-		if GameManager.current_state == GameManager.GameState.PLAYING:
-			GameManager.toggle_inventory()
-	elif event.is_action_pressed("ui_cancel"):
-		if self.visible:
-			# Let GameManager handle the state transition
-			GameManager.return_to_normal_state()
-		
+# Remove _unhandled_input as this will now be handled at the manager level
+
 func show_inventory() -> void:
 	self.visible = true
 	_populate_data()
@@ -52,14 +49,11 @@ func show_inventory() -> void:
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 1.0, 0.2)
 
-func _close_inventory() -> void:
-	# Smooth fade out and proper state transition
+func hide_inventory() -> void:
+	# Smooth fade out
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.2)
-	tween.tween_callback(func(): 
-		self.visible = false
-		GameManager.toggle_inventory()
-	)
+	tween.tween_callback(func(): self.visible = false)
 
 func _setup_tabs() -> void:
 	tab_container.tab_changed.connect(_on_tab_changed)

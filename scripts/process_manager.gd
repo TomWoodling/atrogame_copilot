@@ -21,14 +21,7 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	match current_state:
-		ProcessState.NORMAL:
-			if event.is_action_pressed("ui_cancel"):
-				enter_paused()
-		
-		ProcessState.PAUSED:
-			if event.is_action_pressed("ui_cancel"):
-				exit_paused()
-		
+				
 		ProcessState.CUTSCENE:
 			if event.is_action_pressed("ui_cancel"):
 				# Future: Implement cutscene skip confirmation
@@ -50,13 +43,10 @@ func set_process_state(new_state: ProcessState) -> void:
 # Pause handling
 func enter_paused() -> void:
 	set_process_state(ProcessState.PAUSED)
-	GameManager.pause_game()
-	get_tree().paused = true
 	
 func exit_paused() -> void:
 	set_process_state(ProcessState.NORMAL)
-	GameManager.resume_game()
-	get_tree().paused = false
+
 
 # Utility functions for common state changes
 func enter_cutscene() -> void:

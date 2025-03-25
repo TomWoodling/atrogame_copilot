@@ -1,189 +1,41 @@
-# encounter_stage.gd (modified)
+# encounter_stage.gd
 extends StaticBody3D
 
-signal challenge_item_collected(item_id: String)
-signal challenge_destination_reached
-signal challenge_time_elapsed
-
-# Challenge objects
-const COLLECTION_ITEM = preload("res://scenes/challenge_collectable.tscn")
-const DESTINATION_MARKER = preload("res://scenes/destination_marker.tscn")
+signal challenge_scene_ready
+signal challenge_scene_cleaned_up
 
 @onready var mesh_instance: MeshInstance3D = $MeshInstance3D
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
-@onready var timer: Timer = $Timer
 
-# Challenge configuration
-var challenge_type: EncounterManager.ChallengeType
-var challenge_config: Dictionary
-var item_count: int = 0
-var collected_count: int = 0
-var time_limit: float = 0
-var time_remaining: float = 0
+# Stage configuration
+var stage_bounds: Vector2 = Vector2(10.0, 10.0)  # Default size
 var is_active: bool = false
 
-# Collection of all spawned objects
-var challenge_objects: Array[Node3D] = []
-
 func _ready() -> void:
-	# Initialize timer
-	if not has_node("Timer"):
-		var new_timer = Timer.new()
-		new_timer.name = "Timer"
-		add_child(new_timer)
-		timer = new_timer
-	
-	timer.one_shot = false
-	timer.timeout.connect(_on_timer_timeout)
+	# Initialization setup
+	pass
 
-func setup_challenge(type: EncounterManager.ChallengeType, config: Dictionary) -> void:
-	# Store challenge configuration
-	challenge_type = type
-	challenge_config = config
-	
+func setup_stage(challenge_type: EncounterManager.ChallengeType, config: Dictionary) -> void:
 	# Resize stage based on challenge type
-	var stage_size := _get_stage_size(type)
+	var stage_size := _get_stage_size(challenge_type)
 	if not _resize_stage(stage_size):
 		push_error("Failed to resize challenge stage")
 		return
 	
-	# Create challenge objects based on type
-	match type:
-		EncounterManager.ChallengeType.COLLECTION:
-			_setup_collection_challenge(config)
-		EncounterManager.ChallengeType.PLATFORMING:
-			_setup_platforming_challenge(config)
-		EncounterManager.ChallengeType.TIMED_TASK:
-			_setup_timed_challenge(config)
-		EncounterManager.ChallengeType.PUZZLE:
-			_setup_puzzle_challenge(config)
+	# Setup boundary detection
+	_setup_boundary_area(stage_size)
 	
-	# Set up time limit if applicable
-	if config.has("time_limit") and config.time_limit > 0:
-		time_limit = config.time_limit
-		time_remaining = time_limit
+	# Mark stage as active
+	is_active = true
 	
-	# Activate the challenge
-	activate()
+	emit_signal("challenge_scene_ready")
 
 func activate() -> void:
 	is_active = true
-	
-	# Start timer if time-limited
-	if time_limit > 0:
-		timer.start(1.0)  # Update every second
-		
-		# Show initial time
-		HUDManager.show_message({
-			"text": "Time remaining: " + str(int(time_remaining)) + "s",
-			"color": Color.YELLOW,
-			"duration": 1.0
-		})
 
 func deactivate() -> void:
 	is_active = false
-	timer.stop()
-	
-	# Clean up challenge objects
 	cleanup()
-
-func _setup_collection_challenge(config: Dictionary) -> void:
-	# Get params with defaults
-	item_count = config.get("count", 5)
-	var spawn_radius = config.get("radius", 10.0)
-	
-	# Create collection items
-	for i in range(item_count):
-		var item = COLLECTION_ITEM.instantiate()
-		add_child(item)
-		
-		# Random position within radius
-		var angle = randf() * TAU
-		var distance = randf_range(2.0, spawn_radius)
-		var pos = Vector3(cos(angle) * distance, 1.0, sin(angle) * distance)
-		item.position = pos
-		
-		# Connect signals
-		if item.has_signal("collected"):
-			item.connect("collected", _on_item_collected)
-		
-		challenge_objects.append(item)
-
-func _setup_platforming_challenge(config: Dictionary) -> void:
-	# Get params with defaults
-	var destination_distance = config.get("distance", 15.0)
-	var platform_count = config.get("platform_count", 5)
-	
-	# Create destination marker
-	var destination = DESTINATION_MARKER.instantiate()
-	add_child(destination)
-	
-	# Position at a specific distance, potentially elevated
-	var angle = randf() * TAU
-	var pos = Vector3(cos(angle) * destination_distance, config.get("height", 5.0), sin(angle) * destination_distance)
-	destination.position = pos
-	
-	# Connect signals
-	if destination.has_signal("reached"):
-		destination.connect("reached", _on_destination_reached)
-	
-	challenge_objects.append(destination)
-	
-	# Create platforms leading to destination
-	# (Platform creation code would go here)
-
-func _setup_timed_challenge(config: Dictionary) -> void:
-	# Implementation depends on the specific timed challenge type
-	pass
-
-func _setup_puzzle_challenge(config: Dictionary) -> void:
-	# Implementation depends on the puzzle design
-	pass
-
-func _on_item_collected(item_id: String) -> void:
-	collected_count += 1
-	emit_signal("challenge_item_collected", item_id)
-	
-	# Update HUD
-	HUDManager.show_message({
-		"text": "Collected " + str(collected_count) + "/" + str(item_count),
-		"color": Color.GREEN,
-		"duration": 1.0
-	})
-	
-	# Check if all items collected
-	if collected_count >= item_count:
-		# Complete the challenge
-		EncounterManager.complete_challenge(true)
-
-func _on_destination_reached() -> void:
-	emit_signal("challenge_destination_reached")
-	
-	# Complete the challenge
-	EncounterManager.complete_challenge(true)
-
-func _on_timer_timeout() -> void:
-	time_remaining -= 1.0
-	
-	# Update HUD with time remaining
-	if time_remaining > 0:
-		if time_remaining <= 10:  # Last 10 seconds
-			HUDManager.show_message({
-				"text": "Time remaining: " + str(int(time_remaining)) + "s",
-				"color": Color.RED if time_remaining <= 5 else Color.YELLOW,
-				"duration": 0.5
-			})
-	else:
-		# Time's up!
-		emit_signal("challenge_time_elapsed")
-		
-		# Fail the challenge if time-based
-		var fail_on_timeout = challenge_config.get("fail_on_timeout", true)
-		if fail_on_timeout:
-			EncounterManager.complete_challenge(false)
-		
-		# Stop the timer
-		timer.stop()
 
 func _get_stage_size(type: EncounterManager.ChallengeType) -> Vector2:
 	match type:
@@ -199,14 +51,71 @@ func _get_stage_size(type: EncounterManager.ChallengeType) -> Vector2:
 			return Vector2(10.0, 10.0)
 
 func _resize_stage(size: Vector2) -> bool:
-	# Reuse your existing resize code
-	# ...
-	return true  # Return success/failure
+	stage_bounds = size
+	
+	# Ensure the required nodes exist
+	if not is_instance_valid(mesh_instance) or not is_instance_valid(collision_shape):
+		push_error("Missing mesh or collision shape for stage resizing")
+		return false
+	
+	# Resize mesh
+	var mesh = mesh_instance.mesh
+	if mesh is PlaneMesh:
+		mesh.size = size
+	elif mesh is BoxMesh:
+		mesh.size = Vector3(size.x, mesh.size.y, size.y)
+	
+	# Resize collision shape
+	var collision = collision_shape.shape
+	if collision is BoxShape3D:
+		collision.size = Vector3(size.x, collision.size.y, size.y)
+	
+	return true
+
+func _setup_boundary_area(size: Vector2) -> void:
+	# Previous boundary area setup method remains the same
+	# This ensures players stay within the challenge stage
+	var area = Area3D.new()
+	area.name = "BoundaryArea"
+	
+	var margin = 2.0
+	var box_shape = BoxShape3D.new()
+	box_shape.size = Vector3(size.x + margin, 10.0, size.y + margin)
+	
+	var collision = CollisionShape3D.new()
+	collision.shape = box_shape
+	area.add_child(collision)
+	
+	area.body_exited.connect(_on_body_exit_boundary)
+	
+	add_child(area)
+
+func _on_body_exit_boundary(body: Node3D) -> void:
+	# Existing boundary exit handling method remains the same
+	# This provides a bounce-back mechanism for players
+	if body.is_in_group("player"):
+		# Bounce player back logic
+		var player_pos = body.global_position
+		var center = global_position
+		
+		var half_x = stage_bounds.x / 2 - 1.0
+		var half_z = stage_bounds.y / 2 - 1.0
+		var new_x = clamp(player_pos.x, center.x - half_x, center.x + half_x)
+		var new_z = clamp(player_pos.z, center.z - half_z, center.z + half_z)
+		
+		body.global_position = Vector3(new_x, player_pos.y, new_z)
+		
+		# Add bounce effect
+		_play_bounce_effect(body.global_position)
+
+func _play_bounce_effect(position: Vector3) -> void:
+	HUDManager.show_message({
+		"text": "Boing!",
+		"color": Color.YELLOW,
+		"duration": 0.5
+	})
 
 func cleanup() -> void:
-	# Clean up all spawned challenge objects
-	for obj in challenge_objects:
-		if is_instance_valid(obj):
-			obj.queue_free()
-	
-	challenge_objects.clear()
+	# Remove any spawned objects or reset stage
+	is_active = false
+	emit_signal("challenge_scene_cleaned_up")

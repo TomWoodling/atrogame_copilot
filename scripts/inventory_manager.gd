@@ -22,15 +22,25 @@ var collections: Dictionary = {
 var npc_encounters: Dictionary = {}
 var achievements: Dictionary = {}
 
+# Add current_mission variables for the UI to access
+var current_mission_id: String = ""
+var current_mission_items: Dictionary = {}
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("gameplay_pause")
 	GameManager.inventory_state_changed.connect(_on_inventory_state_changed)
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Handle inventory toggle input
 	if event.is_action_pressed("inventory"):
-		if GameManager.current_state == GameManager.GameState.PLAYING:
+		# Only handle input during valid gameplay states
+		if GameManager.current_state == GameManager.GameState.PLAYING and (
+		   GameManager.gameplay_state == GameManager.GameplayState.NORMAL or
+		   GameManager.gameplay_state == GameManager.GameplayState.INVENTORY):
 			GameManager.toggle_inventory()
+	
+	# UI cancel (ESC) will route through GameManager's _unhandled_input
 
 func _on_inventory_state_changed(is_open: bool) -> void:
 	if is_open:

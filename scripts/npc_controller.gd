@@ -84,13 +84,17 @@ func on_interaction_started() -> void:
 		
 		# Check for available encounters first
 		current_encounter_id = get_appropriate_encounter_id()
+		var last_encounter
 		if not current_encounter_id.is_empty():  # FIXED: empty() -> is_empty()
 			EncounterManager.start_encounter_by_id(current_encounter_id, self)
 		else:
 			# No encounters available, use default dialog
 			if not dialogue_id.is_empty():  # FIXED: empty() -> is_empty()
 				# Check if we should use post-completion dialog instead
-				var last_encounter = available_encounters if available_encounters.size() > 0 else null
+				if available_encounters.size() > 0:
+					last_encounter = available_encounters[-1]  # Assign the last element of the array
+				else:
+					last_encounter = null  # Assign null if the array is empty
 				var encounter = EncounterManager.get_encounter(last_encounter)
 				
 				if not last_encounter.is_empty() and InventoryManager.is_encounter_completed(last_encounter) and encounter:  # FIXED: empty() -> is_empty()
