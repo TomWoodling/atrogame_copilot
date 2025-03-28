@@ -38,7 +38,7 @@ func _ready() -> void:
 	# Connect to process and encounter manager signals for state synchronization
 	ProcessManager.process_state_changed.connect(_on_process_state_changed)
 	EncounterManager.encounter_started.connect(_on_encounter_started)
-	EncounterManager.encounter_completed.connect(_on_encounter_completed)
+	EncounterManager.encounter_finished.connect(_on_encounter_completed)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -191,6 +191,7 @@ func stop_scanning() -> void:
 	# Exit scanning state
 	if gameplay_state == GameplayState.SCANNING:
 		_set_gameplay_state(GameplayState.NORMAL)
+		scan_completed.emit()
 
 func enter_stunned() -> void:
 	# Enter stunned state

@@ -34,7 +34,7 @@ script = ExtResource("1_vw1nt")
 collection_data = ExtResource("2_fvxrm")
 
 [node name="scannable_object" parent="." instance=ExtResource("3_cxshi")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -0.00208044, 0.749416, 0.103231)
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -0.00208044, 0.541502, 0.103231)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.639877, 0)
@@ -52,6 +52,7 @@ transform = Transform3D(-0.0956547, 0, 0.995415, 0, 1, 0, -0.995415, 0, -0.09565
 visible = false
 emitting = false
 amount = 16
+lifetime = 2.0
 one_shot = true
 explosiveness = 0.25
 visibility_aabb = AABB(-1, -1, -1, 2, 2, 2)

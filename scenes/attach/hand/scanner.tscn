@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://byxfk7o04d5k0"]
+
+[ext_resource type="PackedScene" uid="uid://dt2vqofmtwm2q" path="res://assets/models/scanner/scanner3.glb" id="1_73jof"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kr1y7"]
+size = Vector3(0.56073, 0.587891, 0.551208)
+
+[node name="Scanner" type="StaticBody3D"]
+transform = Transform3D(0.859558, -0.510917, 0.0111393, 0, 0.0217974, 0.999762, -0.511038, -0.859354, 0.0187362, 0, 0.360901, 0.0735934)
+collision_layer = 4
+collision_mask = 4
+
+[node name="scanner3" parent="." instance=ExtResource("1_73jof")]
+transform = Transform3D(0.739831, -0.347138, -0.576321, 2.0281e-08, 0.856609, -0.515965, 0.672793, 0.381727, 0.633746, -0.210626, 0.126768, 0.381142)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.123749, 0.206055, 0.33139)
+shape = SubResource("BoxShape3D_kr1y7")

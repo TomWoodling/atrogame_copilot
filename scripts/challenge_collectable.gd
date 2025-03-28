@@ -46,7 +46,7 @@ var terraforming_elements: Dictionary = {
 	"Silicon": {"symbol": "Si", "atomic_number": 14, "color": Color(0.6, 0.6, 0.8)},
 	"Phosphorus": {"symbol": "P", "atomic_number": 15, "color": Color(1.0, 0.5, 0.0)},
 	"Iron": {"symbol": "Fe", "atomic_number": 26, "color": Color(0.6, 0.3, 0.1)},
-	"Aluminum": {"symbol": "Al", "atomic_number": 13, "color": Color(0.75, 0.75, 0.75)},
+	"Aluminium": {"symbol": "Al", "atomic_number": 13, "color": Color(0.75, 0.75, 0.75)},
 	"Magnesium": {"symbol": "Mg", "atomic_number": 12, "color": Color(0.8, 0.8, 0.2)},
 	"Helium": {"symbol": "He", "atomic_number": 2, "color": Color(0.9, 0.7, 0.2)},
 	"Niobium": {"symbol": "Nb", "atomic_number": 41, "color": Color(0.4, 0.0, 0.8)}

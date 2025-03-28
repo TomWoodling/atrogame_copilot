@@ -48,6 +48,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.903253, 0)
 visible = false
 emitting = false
 amount = 16
+lifetime = 2.0
 one_shot = true
 explosiveness = 0.25
 visibility_aabb = AABB(-1, -1, -1, 2, 2, 2)

@@ -8,7 +8,7 @@ var dialogs: Dictionary = {}
 
 func _ready() -> void:
 	# Connect to encounter manager signals
-	EncounterManager.dialog_started.connect(_on_dialog_started)
+#	EncounterManager.dialog_started.connect(_on_dialog_started)
 	
 	# Load dialogs
 	load_dialogs()

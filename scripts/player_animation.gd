@@ -5,11 +5,14 @@ extends AnimationTree
 @onready var parent: CharacterBody3D = get_parent().get_parent()
 @onready var animation_state_machine: AnimationNodeStateMachinePlayback = get("parameters/playback")
 @onready var fall_detector: FallDetector = parent.get_node("FallDetector")
+@onready var back_bone: Node3D = %Backpack
+@onready var right_hand: Node3D = %RightHand
+@onready var left_hand: Node3D = %LeftHand
 
 # Animation parameters
 @export_group("Animation Thresholds")
-@export var splat_anim_duration: float = 1.0  # Estimated duration of splat animation
-@export var stand_anim_duration: float = 1.2  # Estimated duration of stand animation
+@export var splat_anim_duration: float = 1.6  # Estimated duration of splat animation
+@export var stand_anim_duration: float = 2.2667  # Estimated duration of stand animation
 
 # Animation states
 enum AnimState {
@@ -20,7 +23,11 @@ enum AnimState {
 	FALLING,
 	SPLAT,
 	STAND,
-	SUCCESS
+	SUCCESS,
+	EQUIPSCAN,
+	SCANNING,
+	TALK,
+	DANCE
 }
 
 # State tracking
@@ -35,6 +42,7 @@ func _ready() -> void:
 	
 	# Connect to necessary signals
 	GameManager.scan_completed.connect(_on_scan_completed)
+	GameManager.scan_started.connect(_on_scan_started)
 	
 	# Store initial gameplay state
 	previous_gameplay_state = GameManager.gameplay_state
@@ -42,6 +50,11 @@ func _ready() -> void:
 	# Connect to fall detector signals
 	fall_detector.falling_state_changed.connect(_on_falling_state_changed)
 	fall_detector.player_landed.connect(_on_player_landed)  # Connect to new simplified signal
+	
+	# Handle initial equipment loadout
+	left_hand.visible = false
+	right_hand.visible = false
+	back_bone.visible = true
 
 func _physics_process(delta: float) -> void:
 	if animation_locked:
@@ -144,6 +157,15 @@ func _apply_animation_state(new_state: AnimState) -> void:
 			animation_state_machine.travel("Stand")
 		AnimState.SUCCESS:
 			animation_state_machine.travel("Success")
+		AnimState.EQUIPSCAN:
+			animation_state_machine.travel("EquipScan")
+		AnimState.SCANNING:
+			animation_state_machine.travel("Scan")
+		AnimState.TALK:
+			animation_state_machine.travel("Talk")
+		AnimState.DANCE:
+			animation_state_machine.travel("Dance")
+		
 
 func _trigger_stun() -> void:
 	# Inform the GameManager of the stunned state
@@ -152,7 +174,14 @@ func _trigger_stun() -> void:
 	previous_gameplay_state = previous_state
 
 func _on_scan_completed() -> void:
-	_play_success_animation()
+	await _play_success_animation()
+	left_hand.visible = false
+	
+
+func _on_scan_started() -> void:
+	_apply_animation_state(AnimState.EQUIPSCAN)
+	left_hand.visible = true
+	animation_locked = true
 
 func _play_success_animation() -> void:
 	# Only play success if not already in a special animation
@@ -182,3 +211,6 @@ func _on_animation_finished(anim_name: String) -> void:
 			GameManager.exit_stunned()
 			# Return to idle state
 			_apply_animation_state(AnimState.IDLE)
+		"EquipScan":
+			# Automatically transition to Scan
+			_apply_animation_state(AnimState.SCANNING)
