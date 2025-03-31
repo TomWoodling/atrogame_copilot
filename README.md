@@ -30,13 +30,21 @@ v0.4-alpha:
     add player animations
     improve gameworld lighting
 
-v0.5-alpha
+v0.5-alpha:
+
+    add more scannable items  
+    make encounters more interactive  
+    more npcs  
+    rationalize world generation flow  
+    add sound
+    add basic main & pause menus 
+
+v0.6-alpha:
 (to-do)
-add more scannable items  
-make encounters more interactive  
-more npcs  
-rationalize world generation flow  
-add sound  
+rework manager structure with Gemini
+stablilize basic game engine
+add NPCs
+add encounters
 add mission structure  
 add encounter and mission data to inventory  
-add basic main & pause menus  
+ 
