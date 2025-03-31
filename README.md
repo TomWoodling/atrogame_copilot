@@ -39,12 +39,12 @@ v0.5-alpha:
     add sound
     add basic main & pause menus 
 
-v0.6-alpha:
-(to-do)
-rework manager structure with Gemini
-stablilize basic game engine
-add NPCs
-add encounters
+v0.6-alpha:  
+(to-do)  
+rework manager structure with Gemini  
+stablilize basic game engine  
+add NPCs  
+add encounters  
 add mission structure  
 add encounter and mission data to inventory  
  
