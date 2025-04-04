@@ -19,24 +19,20 @@
         For Godot Buttons: Select the child Button. Connect its pressed() signal to the parent MissionObjective node's report_trigger_met method.
 
     Add to Group: Add the parent MissionObjective node (the one with the script) to the "mission_objectives" group (new group name).
-
-Example Scene Structure:
-
-      
-▼ mission1_crater (Node3D - Root of Scene)
-  ▼ M1_TalkChad2 (Node - MissionObjective Script Attached, In 'mission_objectives' group)
-	▼ CHADstronaut_2 (CharacterBody3D - Actual NPC scene instance) <--- PlayerInteraction targets this
+▼ mission1_crater (Node3D - Root of Scene)  
+  ▼ M1_TalkChad2 (Node - MissionObjective Script Attached, In 'mission_objectives' group)  
+	▼ CHADstronaut_2 (CharacterBody3D - Actual NPC scene instance) <--- PlayerInteraction targets this  
+	  ▶ CollisionShape3D  
+	  ▶ MeshInstance3D  
+      ▶ InteractionArea (Area3D - for PlayerInteraction highlight)  
+      ▶ NPCInteractionLogic (Node - Script with interact() method) <--- Calls get_parent().report_trigger_met() in interact()  
+  ▼ M1_CollectCarbon1 (Node3D - MissionObjective Script Attached, In 'mission_objectives' group)  
+	▼ CarbonItem (StaticBody3D - The collectable item mesh/collision) <--- PlayerInteraction targets this  
+	  ▶ CollisionShape3D  
+	  ▶ MeshInstance3D  
+      ▶ ItemInteractionLogic (Node - Script with interact() method) <--- Calls get_parent().report_trigger_met() in interact()  
+  ▼ M1_ReachExitArea (Node3D - MissionObjective Script Attached, In 'mission_objectives' group)  
+	▼ ExitTriggerZone (Area3D) <--- Connect body_entered to parent's report_trigger_met  
 	  ▶ CollisionShape3D
-	  ▶ MeshInstance3D
-      ▶ InteractionArea (Area3D - for PlayerInteraction highlight)
-      ▶ NPCInteractionLogic (Node - Script with interact() method) <--- Calls get_parent().report_trigger_met() in interact()
-  ▼ M1_CollectCarbon1 (Node3D - MissionObjective Script Attached, In 'mission_objectives' group)
-	▼ CarbonItem (StaticBody3D - The collectable item mesh/collision) <--- PlayerInteraction targets this
-	  ▶ CollisionShape3D
-	  ▶ MeshInstance3D
-      ▶ ItemInteractionLogic (Node - Script with interact() method) <--- Calls get_parent().report_trigger_met() in interact()
-  ▼ M1_ReachExitArea (Node3D - MissionObjective Script Attached, In 'mission_objectives' group)
-	▼ ExitTriggerZone (Area3D) <--- Connect body_entered to parent's report_trigger_met
-	  ▶ CollisionShape3D
-
+   
     
